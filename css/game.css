@@ -1,0 +1,43 @@
+body {
+    background-color: rgb(50,50,50);
+    font-family: sans-serif;
+    margin: 2.0em;
+}
+
+.canvas {
+     margin: 1.0em auto;
+     position: relative;
+     width: 1080px;
+}
+
+.canvas-background {
+     background-color: rgb(255,255,255);
+}
+
+.canvas-foreground {
+     left: 0;
+     position: absolute;
+     top: 0;
+     z-index: 1;
+}
+
+.spritesheet {
+    display: none;
+}
+
+.statistic {
+    background-color: rgba(0,0,0,0.7);
+    border-radius: 0.5em;
+    color: white;
+    padding: 1.0em;
+    position: absolute;
+    right: 0.5em;
+    text-align: right;
+    top: 0.5em;
+    width: 5.0em;
+    z-index: 10;
+ }
+ 
+ .time {
+    top: 4.0em;
+ }
