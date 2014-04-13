@@ -4,11 +4,24 @@ define([
 
 	var Character = Backbone.Model.extend({
 		defaults: {
-			name: '',
-			strength: 0,
-			intelligence: 0,
-			happiness: 0,
-			available: 100
+            attributes: {
+                available: 100,
+                strength: 0,
+                intelligence: 0,
+                happiness: 0
+            },
+            currentTile: null,
+			movementRange: 7,
+            name: '',
+			possiblePath: null,
+			path: null,
+			spritesheet: document.getElementById('spritesheet'),
+			targetTile: null,
+			targetX: null,
+			targetY: null,
+			velocity: 200,
+			x: null,
+			y: null
 		},
 		
 		addPointToAttribute: function(attr, change) {
@@ -19,18 +32,18 @@ define([
 		}
 	});
 	
-	var CharactersList = Backbone.Collection.extend({
+	var CharacterList = Backbone.Collection.extend({
 		
-		addNewChar: function(name) {
-			var c = new Character({
+		addCharacter: function(name) {
+			var character = new Character({
 				name: name
 			});
 			
-			this.add(c);
-			return c;
+			this.add(character);
+			return character;
 		}
 		
 	});
 	
-	return new CharactersList();
+	return new CharacterList();
 });
