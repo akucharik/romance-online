@@ -2,12 +2,12 @@ define([
 	'backbone'
 ], function(Backbone) {
 
-    var average = function (list) {
+    var average = function (items) {
         var total = 0;
-        for (var i = 0; i < list.length; i++) {
-            total += list[i];
+        for (var i = 0; i < items.length; i++) {
+            total += items[i];
         }
-        return total / list.length;
+        return total / items.length;
     };  
     
     var FrameRate = Backbone.Model.extend({
@@ -25,7 +25,7 @@ define([
         
         logFrameRate: function (currentRate) {
             var newLastXRates = this.get('lastXRates').slice();
-            if (newLastXRates.length === 60) {
+            if (newLastXRates.length === 30) {
                 newLastXRates.shift();
             }
             newLastXRates.push(currentRate);
