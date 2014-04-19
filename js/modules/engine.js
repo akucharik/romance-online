@@ -37,12 +37,12 @@ define([
                     var targetX = tile.x + engine.grid.tileSize/2;
                     var targetY = tile.y + engine.grid.tileSize/2;
                     var increment = 6;
-
+                    
                     // move left
                     if (engine.character.x > targetX) {
                         increment = Math.abs(increment) * -1;
                         engine.character.x += increment;
-                        if (engine.character.x < targetX) {
+                        if (engine.character.x <= targetX) {
                             engine.character.x = targetX;
                         }
                     }
@@ -51,7 +51,7 @@ define([
                     if (engine.character.x < targetX) {
                         increment = Math.abs(increment);
                         engine.character.x += increment;
-                        if (engine.character.x > targetX) {
+                        if (engine.character.x >= targetX) {
                             engine.character.x = targetX;
                         }
                     }
@@ -60,7 +60,7 @@ define([
                     if (engine.character.y > targetY) {
                         increment = Math.abs(increment) * -1;
                         engine.character.y += increment;
-                        if (engine.character.y < targetY) {
+                        if (engine.character.y <= targetY) {
                             engine.character.y = targetY;
                         }
                     }
@@ -69,7 +69,7 @@ define([
                     if (engine.character.y < targetY) {
                         increment = Math.abs(increment);
                         engine.character.y += increment;
-                        if (engine.character.y > targetY) {
+                        if (engine.character.y >= targetY) {
                             engine.character.y = targetY;
                         }
                     }
@@ -77,9 +77,7 @@ define([
                     if (engine.character.x === targetX && engine.character.y === targetY) {
                         clearInterval(stepTimer);
                         engine.character.currentTile = tile;
-                        // remove recently stepped tile from path
                         engine.character.path.shift();
-                        engine.character.possiblePath = engine.character.path;
                         // recursive: move to next tile in path
                         engine.character.move();
                     }
@@ -89,19 +87,35 @@ define([
                 // step to the first tile in the path
                 if (this.path.length > 0) {
                     console.log('stepTo: ', this.path[0]);
+                    self = this;
                     stepTimer = setInterval(function () {
-                        stepTo(this.path[0]);
+                        stepTo(self.path[0]);
                     }, 16);
                 }
             },
 
-            // TODO: determine path, set possible path, set path, tile changed sets possible path, tile clicked sets path and calls "move"
-            determinePath: function (endTile) {
-                // TODO: stateTile is hard-coded for a specific character, refactor
-                var startTile = this.currentTile;
-                var path = [];
+            currentTile: null,
+            movementRange: 7,
+            path: [],
+            spritesheet: document.getElementById('spritesheet'),
+            velocity: 200,
+            x: null,
+            y: null,
+            setStartPosition: function (tile) {
+                this.currentTile = tile;
+                this.x = this.currentTile.x + engine.grid.tileSize/2;
+                this.y = this.currentTile.y + engine.grid.tileSize/2;
+            }
+        },
+        
+        pathfinder: {
+            path: [],
+            
+            findPath: function (endTile, character) {
+                var startTile = character.currentTile;
+                var newPath = [];
 
-                for (i = 0; i < this.movementRange; i++) {
+                for (i = 0; i < character.movementRange; i++) {
                     var deltaTileCol = startTile.col - endTile.col;
                     var deltaTileRow = startTile.row - endTile.row;
 
@@ -127,26 +141,29 @@ define([
                         }
                     }
                     startTile = engine.grid.rows[targetRow][targetCol];
-                    path.push(startTile);
+                    newPath.push(startTile);
 
                     // end path if destination does not use all movement points
                     if (startTile.row === endTile.row && startTile.col === endTile.col) {
                         break;
                     }
                 }
-
-                return path;
+                
+                // do set path if the focused tile is out of range
+                if (endTile.row === newPath[newPath.length - 1].row && endTile.col === newPath[newPath.length - 1].col) {
+                    this.path = newPath;
+                }
+                else { 
+                    this.path = [];
+                }
             },
 
-            setPossiblePath: function (tile) {
-                this.possiblePath = this.determinePath(tile);
+            selectPath: function (character) {
+                character.path = this.path.slice();
+                this.path = [];
             },
 
-            setPath: function (endTile) {
-                this.path = this.possiblePath;
-            },
-
-            tileIsInPath: function (tile) {
+            tileIsInPath: function (tile, character) {
                 var matchFound = false;
                 for (i = 0; i < this.path.length; i++) {
                     if (tile === this.path[i]) {
@@ -154,24 +171,6 @@ define([
                     }
                 };
                 return matchFound;
-            },
-
-            currentTile: null,
-            movementRange: 7,
-            possiblePath: null,
-            path: null,
-            spritesheet: document.getElementById('spritesheet'),
-            targetTile: null,
-            targetX: null,
-            targetY: null,
-            velocity: 200,
-            x: null,
-            y: null,
-            setStartPosition: function (tile) {
-                console.log(this);
-                this.currentTile = tile;
-                this.x = this.currentTile.x + engine.grid.tileSize/2;
-                this.y = this.currentTile.y + engine.grid.tileSize/2;
             }
         },
 
@@ -214,8 +213,8 @@ define([
 
         canvasClick: function (event) {
             engine.selectTile(event);
-            engine.character.setPath();
-            if (engine.character.tileIsInPath(engine.grid.selectedTile)) {
+            if (engine.pathfinder.tileIsInPath(engine.grid.selectedTile, engine.character)) {
+                engine.pathfinder.selectPath(engine.character);
                 engine.character.move();
             }
         },
@@ -237,7 +236,7 @@ define([
 
         //TODO: figure out how to better handle listening to a "focused tile changed" event
         focusedTileChanged: function () {
-            this.character.setPossiblePath(this.grid.focusedTile);
+            this.pathfinder.findPath(this.grid.focusedTile, this.character);
         },
 
 
@@ -316,24 +315,20 @@ define([
                 };
             };
         },
-
-        renderCharacterPath: function (tile, canvasCtx) {
-            if (tile !== undefined && tile!== null && this.character.possiblePath.length > 0) {
-                path = this.character.possiblePath;
-                // render path only if focused tile is within movement range
-                if (tile.row === path[path.length - 1].row && tile.col === path[path.length - 1].col) {
-                    canvasCtx.fillStyle = 'rgba(255, 200, 100, 0.5)';
-                    for (i = 0; i < path.length; i++)
-                    {
-                        this.drawTile(path[i], canvasCtx, 2);
+        
+        renderPaths: function (paths, canvasCtx) {
+            canvasCtx.fillStyle = 'rgba(255, 200, 100, 0.5)';
+            for (var iPath = 0; iPath < paths.length; iPath++) {
+                if (paths[iPath].length > 0) {
+                    var path = paths[iPath];
+                    for (var iTile = 0; iTile < path.length; iTile++) {
+                        this.drawTile(path[iTile], canvasCtx, 2);
                         canvasCtx.fill();
-                    }
+                    };
                 }
-            }
-            //else {
-            //	alert("No destination tile was provided to display the character's path.");
-            //}
+            };
         },
+        
 
         renderFocusedTile: function (tile, canvasCtx) {
             if (tile !== null && tile !== undefined) {
@@ -363,7 +358,7 @@ define([
         render: function () {
             this.foregroundCtx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
             this.renderSelectedTile(this.grid.selectedTile, this.foregroundCtx);
-            this.renderCharacterPath(this.grid.focusedTile, this.foregroundCtx);
+            this.renderPaths([this.pathfinder.path, this.character.path], this.foregroundCtx);
             this.renderFocusedTile(this.grid.focusedTile, this.foregroundCtx);
             this.renderCharacter(this.foregroundCtx);
         },
