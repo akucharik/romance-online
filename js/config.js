@@ -3,6 +3,7 @@ var require = {
 	urlArgs: 'bust='+ (new Date().getTime()),
     paths: {
         backbone: 'libs/backbone',
+        'class': 'libs/class',
         jquery: 'libs/jquery',
 		jquery_colorbox: 'libs/jquery.colorbox',
         underscore: 'libs/underscore'
@@ -11,6 +12,9 @@ var require = {
 		backbone: {
 			deps: ['jquery', 'underscore'],
 			exports: 'Backbone'
+		},
+        'class': {
+			exports: 'Class'
 		},
 		jquery_colorbox: {
 			deps: ['jquery'],

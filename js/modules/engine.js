@@ -1,8 +1,10 @@
 define([
 	'jquery',
+    'modules/constants',
     'modules/utilities-m',
-    'modules/utilities-v'
-], function($, UtilitiesModel, UtilitiesView) {
+    'modules/utilities-v',
+    'modules/tile'
+], function($, constants, UtilitiesModel, UtilitiesView, Tile) {
 
     var engine = {
 
@@ -16,8 +18,8 @@ define([
             previousFocusedTile: null,
             rows: [],
             selectedTile: null,
-            tileIndent: 4,
-            tileSize: 72
+            tileIndent: constants.grid.tileIndent,
+            tileSize: constants.grid.tileSize
         },
 
         // canvas properties
@@ -112,44 +114,48 @@ define([
             path: [],
             
             findPath: function (endTile, character) {
-                var startTile = character.currentTile;
+                var currentTile = character.currentTile;
                 var newPath = [];
 
                 for (i = 0; i < character.movementRange; i++) {
-                    var deltaTileCol = startTile.col - endTile.col;
-                    var deltaTileRow = startTile.row - endTile.row;
+                    var deltaTileCol = currentTile.col - endTile.col;
+                    var deltaTileRow = currentTile.row - endTile.row;
+                    
+                    // default the next position to the current position
+                    var nextTile = {
+                        row: currentTile.row,
+                        col: currentTile.col
+                    }
 
-                    // default the target position to the current position
-                    var targetRow = startTile.row;
-                    var targetCol = startTile.col;	
-
-                    // determine tile to step to
+                    // determine next tile to step to
                     if (Math.abs(deltaTileRow) >= Math.abs(deltaTileCol)) {
                         if (deltaTileRow < 0) {
-                            targetRow = startTile.row + 1;
+                            nextTile.row++;
                         }
                         if (deltaTileRow > 0) {
-                            targetRow = startTile.row - 1;
+                            nextTile.row--;
                         }
                     }
                     if (Math.abs(deltaTileCol) > Math.abs(deltaTileRow)) {
                         if (deltaTileCol < 0) {
-                            targetCol = startTile.col + 1;
+                            nextTile.col++;
                         }
                         if (deltaTileCol > 0) {
-                            targetCol = startTile.col - 1;
+                            nextTile.col--;
                         }
                     }
-                    startTile = engine.grid.rows[targetRow][targetCol];
-                    newPath.push(startTile);
+                    currentTile = engine.grid.rows[nextTile.row][nextTile.col];
+                    newPath.push(currentTile);
 
-                    // end path if destination does not use all movement points
-                    if (startTile.row === endTile.row && startTile.col === endTile.col) {
+                    // end path
+                    //TODO: when tile is refactored into its own object, make an "isEqual" method that compares itself to another tile
+                    if (currentTile.row === endTile.row && currentTile.col === endTile.col) {
                         break;
                     }
                 }
                 
-                // do set path if the focused tile is out of range
+                //TODO: when tile is refactored into its own object, make an "isEqual" method that compares itself to another tile
+                // only set the path if the focused tile is in range
                 if (endTile.row === newPath[newPath.length - 1].row && endTile.col === newPath[newPath.length - 1].col) {
                     this.path = newPath;
                 }
@@ -200,9 +206,10 @@ define([
                     engine.trackMouse(event);
                 }
                 else {
+                    //TODO: wrap in a function call like 'clearMouse()'
                     engine.mouse.pageX = null;
                     engine.mouse.pageY = null;
-                    // remove focused tile if mouse is no over canvas
+                    // remove focused tile if mouse is not over canvas
                     engine.grid.focusedTile = null;
                 }
             });
@@ -262,7 +269,7 @@ define([
 
         drawTile: function (tile, canvasCtx, indentValue) {
             if (tile !== undefined && tile !== null) {
-                var indent = (!indentValue ? 0 : indentValue);
+                var indent = (indentValue === undefined ? 0 : indentValue);
                 canvasCtx.beginPath();
                 canvasCtx.rect(tile.x + indent/2, tile.y + indent/2, this.grid.tileSize - indent, this.grid.tileSize - indent);
             }
@@ -317,12 +324,12 @@ define([
         },
         
         renderPaths: function (paths, canvasCtx) {
-            canvasCtx.fillStyle = 'rgba(255, 200, 100, 0.5)';
+            canvasCtx.fillStyle = constants.grid.pathFillStyle;
             for (var iPath = 0; iPath < paths.length; iPath++) {
                 if (paths[iPath].length > 0) {
                     var path = paths[iPath];
                     for (var iTile = 0; iTile < path.length; iTile++) {
-                        this.drawTile(path[iTile], canvasCtx, 2);
+                        this.drawTile(path[iTile], canvasCtx, constants.grid.tileIndent);
                         canvasCtx.fill();
                     };
                 }
@@ -332,16 +339,18 @@ define([
 
         renderFocusedTile: function (tile, canvasCtx) {
             if (tile !== null && tile !== undefined) {
-                canvasCtx.strokeStyle = 'rgba(255, 100, 100, 1.0)';
-                canvasCtx.lineWidth = 2;
-                this.drawTile(tile, canvasCtx, 2);
+                canvasCtx.strokeStyle = constants.grid.focusedTileFillStyle;
+                canvasCtx.lineWidth = constants.grid.focusedTileBorderWidth;
+                this.drawTile(tile, canvasCtx, constants.grid.focusedTileIndent);
                 canvasCtx.stroke();	
             }
         },
 
         renderSelectedTile: function (tile, canvasCtx) {
+            //TODO: research if should use "!== undefined" or "typeof x !== 'undefined'"
+            //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined
             if (tile !== null && tile !== undefined) {
-                canvasCtx.fillStyle = 'rgba(255, 200, 100, 1.0)';
+                canvasCtx.fillStyle = constants.grid.selectedTileFillStyle;
                 this.drawTile(tile, canvasCtx, this.grid.tileIndent);
                 canvasCtx.fill();
             }
