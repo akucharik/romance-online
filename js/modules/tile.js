@@ -5,9 +5,9 @@ define([
 ], function(Class, constants, Position) {
 
     var Tile = Class.extend({
-        init: function (gridRow, gridCol, isOccupied) {
-            this.gridPosition = new Position(gridRow, gridCol);
-            this.position = new Position(gridRow * constants.grid.tileSize, gridCol * constants.grid.tileSize);
+        init: function (gridX, gridY, isOccupied) {
+            this.gridPosition = new Position(gridX, gridY);
+            this.position = new Position(gridX * constants.grid.tileSize, gridY * constants.grid.tileSize);
             this.isOccupied = isOccupied;
         }
     });

@@ -1,87 +1,95 @@
 define([
 	'jquery',
     'modules/constants',
+    'modules/position',
+    'modules/tile',
     'modules/utilities-m',
-    'modules/utilities-v',
-    'modules/tile'
-], function($, constants, UtilitiesModel, UtilitiesView, Tile) {
+    'modules/utilities-v'
+], function($, constants, Position, Tile, UtilitiesModel, UtilitiesView) {
 
     var engine = {
 
         mouse: {
-            pageX: null,
-            pageY: null
+            position: new Position(null, null)
         },
 
         grid: {
             focusedTile: null,
             previousFocusedTile: null,
-            rows: [],
             selectedTile: null,
+            tiles: [],
             tileIndent: constants.grid.tileIndent,
             tileSize: constants.grid.tileSize
         },
 
         // canvas properties
-        canvasWidth: 1080,
-        canvasHeight: 720,
-        background: null,
-        backgroundCtx: null,
-        foreground: null,
-        foregroundCtx: null,
+        canvas: {
+            background: null,
+            backgroundCtx: null,
+            foreground: null,
+            foregroundCtx: null,
+            height: 720,
+            width: 1080
+        },
+        
+        state: {
+            currentTurn: {
+                character: null
+            }
+        },
         
         character: {
             move: function () {
                 var stepTimer = null;
 
-                var stepTo = function (tile) {
+                var stepTo = function (tile, self) {
 
-                    var targetX = tile.x + engine.grid.tileSize/2;
-                    var targetY = tile.y + engine.grid.tileSize/2;
+                    var targetX = tile.position.x + engine.grid.tileSize/2;
+                    var targetY = tile.position.y + engine.grid.tileSize/2;
                     var increment = 6;
                     
                     // move left
-                    if (engine.character.x > targetX) {
+                    if (self.position.x > targetX) {
                         increment = Math.abs(increment) * -1;
-                        engine.character.x += increment;
-                        if (engine.character.x <= targetX) {
-                            engine.character.x = targetX;
+                        self.position.x += increment;
+                        if (self.position.x <= targetX) {
+                            self.position.x = targetX;
                         }
                     }
 
                     // move right
-                    if (engine.character.x < targetX) {
+                    if (self.position.x < targetX) {
                         increment = Math.abs(increment);
-                        engine.character.x += increment;
-                        if (engine.character.x >= targetX) {
-                            engine.character.x = targetX;
+                        self.position.x += increment;
+                        if (self.position.x >= targetX) {
+                            self.position.x = targetX;
                         }
                     }
 
                     // move up
-                    if (engine.character.y > targetY) {
+                    if (self.position.y > targetY) {
                         increment = Math.abs(increment) * -1;
-                        engine.character.y += increment;
-                        if (engine.character.y <= targetY) {
-                            engine.character.y = targetY;
+                        self.position.y += increment;
+                        if (self.position.y <= targetY) {
+                            self.position.y = targetY;
                         }
                     }
 
                     // move down
-                    if (engine.character.y < targetY) {
+                    if (self.position.y < targetY) {
                         increment = Math.abs(increment);
-                        engine.character.y += increment;
-                        if (engine.character.y >= targetY) {
-                            engine.character.y = targetY;
+                        self.position.y += increment;
+                        if (self.position.y >= targetY) {
+                            self.position.y = targetY;
                         }
                     }
 
-                    if (engine.character.x === targetX && engine.character.y === targetY) {
+                    if (self.position.x === targetX && self.position.y === targetY) {
                         clearInterval(stepTimer);
-                        engine.character.currentTile = tile;
-                        engine.character.path.shift();
+                        self.currentTile = tile;
+                        self.path.shift();
                         // recursive: move to next tile in path
-                        engine.character.move();
+                        self.move();
                     }
 
                 };
@@ -91,7 +99,7 @@ define([
                     console.log('stepTo: ', this.path[0]);
                     self = this;
                     stepTimer = setInterval(function () {
-                        stepTo(self.path[0]);
+                        stepTo(self.path[0], self);
                     }, 16);
                 }
             },
@@ -99,14 +107,12 @@ define([
             currentTile: null,
             movementRange: 7,
             path: [],
+            position: null,
             spritesheet: document.getElementById('spritesheet'),
             velocity: 200,
-            x: null,
-            y: null,
             setStartPosition: function (tile) {
                 this.currentTile = tile;
-                this.x = this.currentTile.x + engine.grid.tileSize/2;
-                this.y = this.currentTile.y + engine.grid.tileSize/2;
+                this.position = new Position(this.currentTile.position.x + engine.grid.tileSize/2, this.currentTile.position.y + engine.grid.tileSize/2);
             }
         },
         
@@ -118,45 +124,42 @@ define([
                 var newPath = [];
 
                 for (i = 0; i < character.movementRange; i++) {
-                    var deltaTileCol = currentTile.col - endTile.col;
-                    var deltaTileRow = currentTile.row - endTile.row;
+                    var deltaTileCol = currentTile.gridPosition.x - endTile.gridPosition.x;
+                    var deltaTileRow = currentTile.gridPosition.y - endTile.gridPosition.y;
                     
                     // default the next position to the current position
-                    var nextTile = {
-                        row: currentTile.row,
-                        col: currentTile.col
-                    }
+                    var nextTile = new Tile(currentTile.gridPosition.x, currentTile.gridPosition.y, false);
 
                     // determine next tile to step to
                     if (Math.abs(deltaTileRow) >= Math.abs(deltaTileCol)) {
                         if (deltaTileRow < 0) {
-                            nextTile.row++;
+                            nextTile.gridPosition.y++;
                         }
                         if (deltaTileRow > 0) {
-                            nextTile.row--;
+                            nextTile.gridPosition.y--;
                         }
                     }
                     if (Math.abs(deltaTileCol) > Math.abs(deltaTileRow)) {
                         if (deltaTileCol < 0) {
-                            nextTile.col++;
+                            nextTile.gridPosition.x++;
                         }
                         if (deltaTileCol > 0) {
-                            nextTile.col--;
+                            nextTile.gridPosition.x--;
                         }
                     }
-                    currentTile = engine.grid.rows[nextTile.row][nextTile.col];
+                    currentTile = engine.grid.tiles[nextTile.gridPosition.x][nextTile.gridPosition.y];
                     newPath.push(currentTile);
 
                     // end path
                     //TODO: when tile is refactored into its own object, make an "isEqual" method that compares itself to another tile
-                    if (currentTile.row === endTile.row && currentTile.col === endTile.col) {
+                    if (currentTile.gridPosition.y === endTile.gridPosition.y && currentTile.gridPosition.x === endTile.gridPosition.x) {
                         break;
                     }
                 }
                 
                 //TODO: when tile is refactored into its own object, make an "isEqual" method that compares itself to another tile
                 // only set the path if the focused tile is in range
-                if (endTile.row === newPath[newPath.length - 1].row && endTile.col === newPath[newPath.length - 1].col) {
+                if (endTile.gridPosition.y === newPath[newPath.length - 1].gridPosition.y && endTile.gridPosition.x === newPath[newPath.length - 1].gridPosition.x) {
                     this.path = newPath;
                 }
                 else { 
@@ -180,49 +183,50 @@ define([
             }
         },
 
-
         init: function () {
             // init background canvas
-            this.background = document.getElementById('background');
-            this.backgroundCtx = background.getContext('2d');
-            this.background.width = this.canvasWidth;
-            this.background.height = this.canvasHeight;
+            this.canvas.background = document.getElementById('background');
+            this.canvas.backgroundCtx = background.getContext('2d');
+            this.canvas.background.width = this.canvas.width;
+            this.canvas.background.height = this.canvas.height;
             this.createGrid();
-            this.renderGrid(this.backgroundCtx);
-            this.character.setStartPosition(this.grid.rows[2][2]);
+            this.renderGrid(this.canvas.backgroundCtx);
+            this.character.setStartPosition(this.grid.tiles[2][2]);
+            this.state.currentTurn.character = engine.character;
 
             // init foreground canvas
-            this.foreground = document.getElementById('foreground');
-            this.foregroundCtx = foreground.getContext('2d');
-            this.foreground.width = this.canvasWidth;
-            this.foreground.height = this.canvasHeight;
+            this.canvas.foreground = document.getElementById('foreground');
+            this.canvas.foregroundCtx = foreground.getContext('2d');
+            this.canvas.foreground.width = this.canvas.width;
+            this.canvas.foreground.height = this.canvas.height;
 
             // start rendering engine
             requestAnimationFrame(this.renderCanvas);
 
             // set event handlers
             $(document).on('mousemove', function (event) { 
-                if (event.target.id === engine.foreground.id) {
+                if (event.target.id === engine.canvas.foreground.id) {
                     engine.trackMouse(event);
                 }
                 else {
                     //TODO: wrap in a function call like 'clearMouse()'
-                    engine.mouse.pageX = null;
-                    engine.mouse.pageY = null;
-                    // remove focused tile if mouse is not over canvas
+                    engine.mouse.position.x = null;
+                    engine.mouse.position.y = null;
+                    // remove mousemove triggered visuals when mouse is not over canvas
                     engine.grid.focusedTile = null;
+                    engine.pathfinder.path = [];
                 }
             });
 
             //foreground.addEventListener('click', canvasClick, false);
-            $(foreground).on('click', this.canvasClick);
+            $(this.canvas.foreground).on('click', this.canvasClick);
         },
 
         canvasClick: function (event) {
             engine.selectTile(event);
-            if (engine.pathfinder.tileIsInPath(engine.grid.selectedTile, engine.character)) {
-                engine.pathfinder.selectPath(engine.character);
-                engine.character.move();
+            if (engine.pathfinder.tileIsInPath(engine.grid.selectedTile, engine.state.currentTurn.character)) {
+                engine.pathfinder.selectPath(engine.state.currentTurn.character);
+                engine.state.currentTurn.character.move();
             }
         },
 
@@ -231,8 +235,8 @@ define([
         },
 
         trackMouse: function (event) {
-            this.mouse.pageX = event.pageX;
-            this.mouse.pageY = event.pageY;
+            this.mouse.position.x = event.pageX;
+            this.mouse.position.y = event.pageY;
             this.grid.previousFocusedTile = this.grid.focusedTile;
             this.grid.focusedTile = this.hitTest(event);
             if (this.grid.previousFocusedTile !== this.grid.focusedTile) {
@@ -243,7 +247,7 @@ define([
 
         //TODO: figure out how to better handle listening to a "focused tile changed" event
         focusedTileChanged: function () {
-            this.pathfinder.findPath(this.grid.focusedTile, this.character);
+            this.pathfinder.findPath(this.grid.focusedTile, this.state.currentTurn.character);
         },
 
 
@@ -251,11 +255,11 @@ define([
 
 
         hitTest: function (mouseObj) {		
-            var backgroundX = mouseObj.pageX - $(this.background).offset().left;
-            var backgroundY = mouseObj.pageY - $(this.background).offset().top;
-            var row = Math.floor(backgroundY / this.grid.tileSize);
-            var col = Math.floor(backgroundX / this.grid.tileSize);
-            return this.grid.rows[row][col];
+            var backgroundX = mouseObj.pageX - $(this.canvas.background).offset().left;
+            var backgroundY = mouseObj.pageY - $(this.canvas.background).offset().top;
+            var x = Math.floor(backgroundX / this.grid.tileSize);
+            var y = Math.floor(backgroundY / this.grid.tileSize);
+            return this.grid.tiles[x][y];
 
             // TODO: only needed for non-square/rectangle tile shapes
             //drawTile(tile, foregroundCtx)
@@ -271,31 +275,21 @@ define([
             if (tile !== undefined && tile !== null) {
                 var indent = (indentValue === undefined ? 0 : indentValue);
                 canvasCtx.beginPath();
-                canvasCtx.rect(tile.x + indent/2, tile.y + indent/2, this.grid.tileSize - indent, this.grid.tileSize - indent);
+                canvasCtx.rect(tile.position.x + indent/2, tile.position.y + indent/2, this.grid.tileSize - indent, this.grid.tileSize - indent);
             }
         },
 
         // create and save grid tiles for future use
         createGrid: function () {
-            var numTilesX = (this.canvasWidth - (this.canvasWidth % this.grid.tileSize)) / this.grid.tileSize;
-            var numTilesY = (this.canvasHeight - (this.canvasHeight % this.grid.tileSize)) / this.grid.tileSize;
-            var tilePositionX = 0;
-            var tilePositionY = 0;
+            var tilesX = (this.canvas.width - (this.canvas.width % this.grid.tileSize)) / this.grid.tileSize;
+            var tilesY = (this.canvas.height - (this.canvas.height % this.grid.tileSize)) / this.grid.tileSize;
 
-            for (var iRow = 0; iRow < numTilesY; iRow++) {
-                this.grid.rows[iRow] = [];
-                tilePositionX = 0;
-                for (var iCol = 0; iCol < numTilesX; iCol++) {
-                    var tile = {
-                        'x': tilePositionX,
-                        'y': tilePositionY,
-                        'row': iRow,
-                        'col': iCol
-                    };
-                    this.grid.rows[iRow].push(tile);
-                    tilePositionX += this.grid.tileSize;
+            for (var x = 0; x < tilesX; x++) {
+                this.grid.tiles[x] = [];
+                for (var y = 0; y < tilesY; y++) {
+                    var newTile = new Tile(x, y, false);
+                    this.grid.tiles[x].push(newTile);
                 };
-                tilePositionY += this.grid.tileSize;
             };
         },
 
@@ -309,15 +303,15 @@ define([
         renderCharacter: function (canvasCtx) {
             var spriteWidth = 16;
             var spriteHeight = 22;
-            canvasCtx.drawImage(engine.character.spritesheet, 205, 487, spriteWidth, spriteHeight, engine.character.x - spriteWidth, engine.character.y - spriteHeight, spriteWidth*2, spriteHeight*2);
+            canvasCtx.drawImage(engine.character.spritesheet, 205, 487, spriteWidth, spriteHeight, engine.character.position.x - spriteWidth, engine.character.position.y - spriteHeight, spriteWidth*2, spriteHeight*2);
         },
 
         renderGrid: function (canvasCtx) {
             canvasCtx.fillStyle = 'rgba(200, 200, 200, 1.0)';
 
-            for (var iRow = 0; iRow < this.grid.rows.length; iRow++) {
-                for(var iTile = 0; iTile < this.grid.rows[iRow].length; iTile++) {
-                    this.drawTile(this.grid.rows[iRow][iTile], canvasCtx, this.grid.tileIndent);
+            for (var x = 0; x < this.grid.tiles.length; x++) {
+                for(var y = 0; y < this.grid.tiles[x].length; y++) {
+                    this.drawTile(this.grid.tiles[x][y], canvasCtx, this.grid.tileIndent);
                     canvasCtx.fill();
                 };
             };
@@ -365,11 +359,11 @@ define([
         },
 
         render: function () {
-            this.foregroundCtx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-            this.renderSelectedTile(this.grid.selectedTile, this.foregroundCtx);
-            this.renderPaths([this.pathfinder.path, this.character.path], this.foregroundCtx);
-            this.renderFocusedTile(this.grid.focusedTile, this.foregroundCtx);
-            this.renderCharacter(this.foregroundCtx);
+            this.canvas.foregroundCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.renderSelectedTile(this.grid.selectedTile, this.canvas.foregroundCtx);
+            this.renderPaths([this.pathfinder.path, this.state.currentTurn.character.path], this.canvas.foregroundCtx);
+            this.renderFocusedTile(this.grid.focusedTile, this.canvas.foregroundCtx);
+            this.renderCharacter(this.canvas.foregroundCtx);
         },
 
         renderCanvas: function () {
