@@ -9,6 +9,14 @@ define([
             this.gridPosition = new Position(gridX, gridY);
             this.position = new Position(gridX * constants.grid.tileSize, gridY * constants.grid.tileSize);
             this.isOccupied = isOccupied;
+        },
+        
+        isEqual: function (tile) {
+            if (this.gridPosition.x === tile.gridPosition.x && this.gridPosition.y === tile.gridPosition.y) {
+                return true;
+            } else {
+                return false;
+            }
         }
     });
     

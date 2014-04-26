@@ -1,18 +1,24 @@
 define([
 	'jquery',
     'modules/constants',
+    'modules/pathfinder',
     'modules/position',
     'modules/tile',
     'modules/utilities-m',
     'modules/utilities-v'
-], function($, constants, Position, Tile, UtilitiesModel, UtilitiesView) {
+], function($, constants, Pathfinder, Position, Tile, UtilitiesModel, UtilitiesView) {
 
     var engine = {
 
-        mouse: {
-            position: new Position(null, null)
+        canvas: {
+            background: null,
+            backgroundCtx: null,
+            foreground: null,
+            foregroundCtx: null,
+            height: 720,
+            width: 1080
         },
-
+        
         grid: {
             focusedTile: null,
             previousFocusedTile: null,
@@ -22,15 +28,11 @@ define([
             tileSize: constants.grid.tileSize
         },
 
-        // canvas properties
-        canvas: {
-            background: null,
-            backgroundCtx: null,
-            foreground: null,
-            foregroundCtx: null,
-            height: 720,
-            width: 1080
+        mouse: {
+            position: new Position(null, null)
         },
+        
+        pathfinder: {},
         
         state: {
             currentTurn: {
@@ -115,73 +117,6 @@ define([
                 this.position = new Position(this.currentTile.position.x + engine.grid.tileSize/2, this.currentTile.position.y + engine.grid.tileSize/2);
             }
         },
-        
-        pathfinder: {
-            path: [],
-            
-            findPath: function (endTile, character) {
-                var currentTile = character.currentTile;
-                var newPath = [];
-
-                for (i = 0; i < character.movementRange; i++) {
-                    var deltaTileCol = currentTile.gridPosition.x - endTile.gridPosition.x;
-                    var deltaTileRow = currentTile.gridPosition.y - endTile.gridPosition.y;
-                    
-                    // default the next position to the current position
-                    var nextTile = new Tile(currentTile.gridPosition.x, currentTile.gridPosition.y, false);
-
-                    // determine next tile to step to
-                    if (Math.abs(deltaTileRow) >= Math.abs(deltaTileCol)) {
-                        if (deltaTileRow < 0) {
-                            nextTile.gridPosition.y++;
-                        }
-                        if (deltaTileRow > 0) {
-                            nextTile.gridPosition.y--;
-                        }
-                    }
-                    if (Math.abs(deltaTileCol) > Math.abs(deltaTileRow)) {
-                        if (deltaTileCol < 0) {
-                            nextTile.gridPosition.x++;
-                        }
-                        if (deltaTileCol > 0) {
-                            nextTile.gridPosition.x--;
-                        }
-                    }
-                    currentTile = engine.grid.tiles[nextTile.gridPosition.x][nextTile.gridPosition.y];
-                    newPath.push(currentTile);
-
-                    // end path
-                    //TODO: when tile is refactored into its own object, make an "isEqual" method that compares itself to another tile
-                    if (currentTile.gridPosition.y === endTile.gridPosition.y && currentTile.gridPosition.x === endTile.gridPosition.x) {
-                        break;
-                    }
-                }
-                
-                //TODO: when tile is refactored into its own object, make an "isEqual" method that compares itself to another tile
-                // only set the path if the focused tile is in range
-                if (endTile.gridPosition.y === newPath[newPath.length - 1].gridPosition.y && endTile.gridPosition.x === newPath[newPath.length - 1].gridPosition.x) {
-                    this.path = newPath;
-                }
-                else { 
-                    this.path = [];
-                }
-            },
-
-            selectPath: function (character) {
-                character.path = this.path.slice();
-                this.path = [];
-            },
-
-            tileIsInPath: function (tile, character) {
-                var matchFound = false;
-                for (i = 0; i < this.path.length; i++) {
-                    if (tile === this.path[i]) {
-                        matchFound = true;
-                    }
-                };
-                return matchFound;
-            }
-        },
 
         init: function () {
             // init background canvas
@@ -200,6 +135,8 @@ define([
             this.canvas.foreground.width = this.canvas.width;
             this.canvas.foreground.height = this.canvas.height;
 
+            this.pathfinder = new Pathfinder(this.grid.tiles);
+            
             // start rendering engine
             requestAnimationFrame(this.renderCanvas);
 
@@ -214,7 +151,7 @@ define([
                     engine.mouse.position.y = null;
                     // remove mousemove triggered visuals when mouse is not over canvas
                     engine.grid.focusedTile = null;
-                    engine.pathfinder.path = [];
+                    engine.pathfinder.clearPath();
                 }
             });
 
@@ -224,7 +161,7 @@ define([
 
         canvasClick: function (event) {
             engine.selectTile(event);
-            if (engine.pathfinder.tileIsInPath(engine.grid.selectedTile, engine.state.currentTurn.character)) {
+            if (engine.pathfinder.isTileInPath(engine.grid.selectedTile)) {
                 engine.pathfinder.selectPath(engine.state.currentTurn.character);
                 engine.state.currentTurn.character.move();
             }
@@ -250,15 +187,17 @@ define([
             this.pathfinder.findPath(this.grid.focusedTile, this.state.currentTurn.character);
         },
 
-
-
-
-
         hitTest: function (mouseObj) {		
             var backgroundX = mouseObj.pageX - $(this.canvas.background).offset().left;
             var backgroundY = mouseObj.pageY - $(this.canvas.background).offset().top;
+            
+            // handle sub-pixel centering of game if it happens
+            backgroundX = (backgroundX < 0) ? 0 : backgroundX;
+            backgroundX = (backgroundX > this.canvas.width) ? this.canvas.width : backgroundX;
+            
             var x = Math.floor(backgroundX / this.grid.tileSize);
             var y = Math.floor(backgroundY / this.grid.tileSize);
+
             return this.grid.tiles[x][y];
 
             // TODO: only needed for non-square/rectangle tile shapes
