@@ -10,14 +10,16 @@ define([
         },
 
         clearPath: function () {
-            this.path = [];
+            if(this.path.length > 0) {
+                this.path = [];
+            }
         },
         
         findPath: function (endTile, character) {
-            var currentTile = character.currentTile;
+            var currentTile = character.get('currentTile');
             var newPath = [];
 
-            for (var i = 0; i < character.movementRange; i++) {
+            for (var i = 0; i < character.get('movementRange'); i++) {
                 var deltaTileCol = currentTile.gridPosition.x - endTile.gridPosition.x;
                 var deltaTileRow = currentTile.gridPosition.y - endTile.gridPosition.y;
 
@@ -69,7 +71,7 @@ define([
         },
 
         selectPath: function (character) {
-            character.path = this.path.slice();
+            character.set('path', this.path.slice());
             this.path = [];
         }
     });

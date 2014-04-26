@@ -1,12 +1,13 @@
 define([
 	'jquery',
+    'modules/character-m',
     'modules/constants',
     'modules/pathfinder',
     'modules/position',
     'modules/tile',
     'modules/utilities-m',
     'modules/utilities-v'
-], function($, constants, Pathfinder, Position, Tile, UtilitiesModel, UtilitiesView) {
+], function($, characterList, constants, Pathfinder, Position, Tile, UtilitiesModel, UtilitiesView) {
 
     var engine = {
 
@@ -39,84 +40,6 @@ define([
                 character: null
             }
         },
-        
-        character: {
-            move: function () {
-                var stepTimer = null;
-
-                var stepTo = function (tile, self) {
-
-                    var targetX = tile.position.x + engine.grid.tileSize/2;
-                    var targetY = tile.position.y + engine.grid.tileSize/2;
-                    var increment = 6;
-                    
-                    // move left
-                    if (self.position.x > targetX) {
-                        increment = Math.abs(increment) * -1;
-                        self.position.x += increment;
-                        if (self.position.x <= targetX) {
-                            self.position.x = targetX;
-                        }
-                    }
-
-                    // move right
-                    if (self.position.x < targetX) {
-                        increment = Math.abs(increment);
-                        self.position.x += increment;
-                        if (self.position.x >= targetX) {
-                            self.position.x = targetX;
-                        }
-                    }
-
-                    // move up
-                    if (self.position.y > targetY) {
-                        increment = Math.abs(increment) * -1;
-                        self.position.y += increment;
-                        if (self.position.y <= targetY) {
-                            self.position.y = targetY;
-                        }
-                    }
-
-                    // move down
-                    if (self.position.y < targetY) {
-                        increment = Math.abs(increment);
-                        self.position.y += increment;
-                        if (self.position.y >= targetY) {
-                            self.position.y = targetY;
-                        }
-                    }
-
-                    if (self.position.x === targetX && self.position.y === targetY) {
-                        clearInterval(stepTimer);
-                        self.currentTile = tile;
-                        self.path.shift();
-                        // recursive: move to next tile in path
-                        self.move();
-                    }
-
-                };
-
-                // step to the first tile in the path
-                if (this.path.length > 0) {
-                    console.log('stepTo: ', this.path[0]);
-                    self = this;
-                    stepTimer = setInterval(function () {
-                        stepTo(self.path[0], self);
-                    }, 16);
-                }
-            },
-
-            currentTile: null,
-            movementRange: 7,
-            path: [],
-            position: null,
-            spritesheet: document.getElementById('spritesheet'),
-            velocity: 200,
-            setStartPosition: function (tile) {
-                this.currentTile = tile;
-                this.position = new Position(this.currentTile.position.x + engine.grid.tileSize/2, this.currentTile.position.y + engine.grid.tileSize/2);
-            }
-        },
 
         init: function () {
             // init background canvas
@@ -126,8 +49,10 @@ define([
             this.canvas.background.height = this.canvas.height;
             this.createGrid();
             this.renderGrid(this.canvas.backgroundCtx);
-            this.character.setStartPosition(this.grid.tiles[2][2]);
-            this.state.currentTurn.character = engine.character;
+            
+            characterList.addCharacter().setStartPosition(this.grid.tiles[2][2]);
+            characterList.addCharacter().setStartPosition(this.grid.tiles[10][3]);
+            this.state.currentTurn.character = characterList.at(0);
 
             // init foreground canvas
             this.canvas.foreground = document.getElementById('foreground');
@@ -138,7 +63,7 @@ define([
             this.pathfinder = new Pathfinder(this.grid.tiles);
             
             // start rendering engine
-            requestAnimationFrame(this.renderCanvas);
+            requestAnimationFrame(this.buildGameFrame);
 
             // set event handlers
             $(document).on('mousemove', function (event) { 
@@ -157,6 +82,15 @@ define([
 
             //foreground.addEventListener('click', canvasClick, false);
             $(this.canvas.foreground).on('click', this.canvasClick);
+            
+            $('#endTurn').on('click', function () {
+                if(characterList.indexOf(engine.state.currentTurn.character) < characterList.length - 1) {
+                    engine.state.currentTurn.character = characterList.at(characterList.indexOf(engine.state.currentTurn.character) + 1);
+                }
+                else {
+                    engine.state.currentTurn.character = characterList.at(0);
+                }
+            });
         },
 
         canvasClick: function (event) {
@@ -165,10 +99,6 @@ define([
                 engine.pathfinder.selectPath(engine.state.currentTurn.character);
                 engine.state.currentTurn.character.move();
             }
-        },
-
-        selectTile: function (event) {
-            this.grid.selectedTile = this.grid.focusedTile;
         },
 
         trackMouse: function (event) {
@@ -181,7 +111,15 @@ define([
                 this.focusedTileChanged();
             }
         },
-
+        
+        
+        
+        
+        
+        selectTile: function (event) {
+            this.grid.selectedTile = this.grid.focusedTile;
+        },
+        
         //TODO: figure out how to better handle listening to a "focused tile changed" event
         focusedTileChanged: function () {
             this.pathfinder.findPath(this.grid.focusedTile, this.state.currentTurn.character);
@@ -236,13 +174,24 @@ define([
 
 
 
+        //var updateEntities = function () {
+        //		
+        //};
 
-
-
+        update: function (deltaFrameTime) {
+            //updateEntities(deltaFrameTime);
+        },
+        
+        
+        
+        
+        
         renderCharacter: function (canvasCtx) {
-            var spriteWidth = 16;
-            var spriteHeight = 22;
-            canvasCtx.drawImage(engine.character.spritesheet, 205, 487, spriteWidth, spriteHeight, engine.character.position.x - spriteWidth, engine.character.position.y - spriteHeight, spriteWidth*2, spriteHeight*2);
+            characterList.forEach(function (e, i) {
+                var spriteWidth = 16;
+                var spriteHeight = 22;
+                canvasCtx.drawImage(e.get('spritesheet'), 205, 487, spriteWidth, spriteHeight, e.get('position').x - spriteWidth, e.get('position').y - spriteHeight, spriteWidth*2, spriteHeight*2);
+            });
         },
 
         renderGrid: function (canvasCtx) {
@@ -268,7 +217,6 @@ define([
                 }
             };
         },
-        
 
         renderFocusedTile: function (tile, canvasCtx) {
             if (tile !== null && tile !== undefined) {
@@ -289,23 +237,15 @@ define([
             }
         },
 
-        //var updateEntities = function () {
-        //		
-        //};
-
-        update: function (deltaFrameTime) {
-            //updateEntities(deltaFrameTime);
-        },
-
         render: function () {
             this.canvas.foregroundCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.renderSelectedTile(this.grid.selectedTile, this.canvas.foregroundCtx);
-            this.renderPaths([this.pathfinder.path, this.state.currentTurn.character.path], this.canvas.foregroundCtx);
+            this.renderPaths([this.pathfinder.path, this.state.currentTurn.character.get('path')], this.canvas.foregroundCtx);
             this.renderFocusedTile(this.grid.focusedTile, this.canvas.foregroundCtx);
             this.renderCharacter(this.canvas.foregroundCtx);
         },
 
-        renderCanvas: function () {
+        buildGameFrame: function () {
             UtilitiesModel.FrameRate.set('currentTime', Date.now());
             var deltaFrameTime = (UtilitiesModel.FrameRate.get('currentTime') - UtilitiesModel.FrameRate.get('lastCalledTime')) / 1000;
             UtilitiesModel.FrameRate.logFrameRate(UtilitiesModel.FrameRate.calculateCurrentFrameRate());
@@ -315,7 +255,7 @@ define([
 
             engine.update(deltaFrameTime);
             engine.render();
-            requestAnimationFrame(engine.renderCanvas);
+            requestAnimationFrame(engine.buildGameFrame);
         }
     };
 
