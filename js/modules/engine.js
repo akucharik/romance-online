@@ -1,5 +1,6 @@
 define([
 	'jquery',
+    'backbone',
     'modules/character-m',
     'modules/constants',
     'modules/pathfinder',
@@ -7,7 +8,7 @@ define([
     'modules/tile',
     'modules/utilities-m',
     'modules/utilities-v'
-], function($, characterList, constants, Pathfinder, Position, Tile, UtilitiesModel, UtilitiesView) {
+], function($, Backbone, characterList, constants, Pathfinder, Position, Tile, UtilitiesModel, UtilitiesView) {
 
     var engine = {
 
@@ -50,9 +51,10 @@ define([
             this.createGrid();
             this.renderGrid(this.canvas.backgroundCtx);
             
-            characterList.addCharacter().setStartPosition(this.grid.tiles[2][2]);
-            characterList.addCharacter().setStartPosition(this.grid.tiles[10][3]);
+            characterList.addCharacter({x: 205, y: 486}).setStartPosition(this.grid.tiles[2][2]);
+            characterList.addCharacter({x: 313, y: 143}).setStartPosition(this.grid.tiles[10][3]);
             this.state.currentTurn.character = characterList.at(0);
+            engine.grid.selectedTile = engine.state.currentTurn.character.get('currentTile');
 
             // init foreground canvas
             this.canvas.foreground = document.getElementById('foreground');
@@ -90,6 +92,7 @@ define([
                 else {
                     engine.state.currentTurn.character = characterList.at(0);
                 }
+                engine.grid.selectedTile = engine.state.currentTurn.character.get('currentTile');
             });
         },
 
@@ -189,8 +192,9 @@ define([
         renderCharacter: function (canvasCtx) {
             characterList.forEach(function (e, i) {
                 var spriteWidth = 16;
-                var spriteHeight = 22;
-                canvasCtx.drawImage(e.get('spritesheet'), 205, 487, spriteWidth, spriteHeight, e.get('position').x - spriteWidth, e.get('position').y - spriteHeight, spriteWidth*2, spriteHeight*2);
+                var spriteHeight = 25;
+                canvasCtx.drawImage(e.get('spritesheet'), e.get('sprite').x, e.get('sprite').y, spriteWidth, spriteHeight, e.get('position').x - spriteWidth, e.get('position').y - spriteHeight, spriteWidth*2, spriteHeight*2);
+                //canvasCtx.drawImage(e.get('spritesheet'), 205, 487, spriteWidth, spriteHeight, e.get('position').x - spriteWidth, e.get('position').y - spriteHeight, spriteWidth*2, spriteHeight*2);
             });
         },
 

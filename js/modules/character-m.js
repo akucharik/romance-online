@@ -4,18 +4,25 @@ define([
     'modules/position'
 ], function(Backbone, constants, Position) {
 
+    var Attributes = Backbone.Model.extend({
+        defaults: {
+            available: 100,
+            intelligence: 50,
+            strength: 50
+        }
+    });
+    
 	var Character = Backbone.Model.extend({
 		defaults: {
-            attributes: {
-                available: 100,
-                strength: 0,
-                intelligence: 0,
-                happiness: 0
-            },
+            attributes: new Attributes(),
             currentTile: null,
             movementRange: 7,
             path: [],
             position: null,
+            sprite: {
+                x: 0,
+                y: 0,
+            },
             spritesheet: document.getElementById('spritesheet'),
             velocity: 200
 		},
@@ -100,9 +107,9 @@ define([
     
 	var CharacterList = Backbone.Collection.extend({
 		
-		addCharacter: function(name) {
+		addCharacter: function(sprite) {
 			var character = new Character({
-
+                sprite: sprite
 			});
 			
 			this.add(character);
