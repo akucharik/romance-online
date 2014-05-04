@@ -6,7 +6,7 @@ define([
 
     var Attributes = Backbone.Model.extend({
         defaults: {
-            available: 100,
+            available: 50,
             intelligence: 50,
             strength: 50
         }
@@ -27,11 +27,16 @@ define([
             velocity: 200
 		},
         
-		addPointToAttribute: function(attr, change) {
-			var cur = this.get(attr);
-			
-			this.set(attr, cur + change);
-			// adjust available accordingly.
+		updateAttribute: function(attribute, change) {
+			var currentAttribute = this.get('attributes').get(attribute);
+            var currentAvailable = this.get('attributes').get('available');
+            
+            if (currentAttribute < constants.character.attributeMax && currentAttribute > 0 && currentAvailable > 0) {
+                this.get('attributes').set(attribute, currentAttribute + change);
+                this.get('attributes').set('available', currentAvailable + (change * -1));
+            }
+            
+            return this.get('attributes').get(attribute);
 		},
         
         move: function () {

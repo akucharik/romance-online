@@ -1,6 +1,16 @@
 define(function() {
 
     var constants = {
+        
+        canvas: {
+            height: 720,
+            width: 1080
+        },
+        
+        character: {
+            attributeMax: 100
+        },
+        
         grid: {
             focusedTileBorderWidth: 2,
             focusedTileFillStyle: 'rgba(255, 100, 100, 1.0)',
@@ -10,6 +20,7 @@ define(function() {
             tileIndent: 4,
             tileSize: 72
         }
+        
     }
     
 	return constants;

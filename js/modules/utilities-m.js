@@ -51,7 +51,7 @@ define([
     
 	return {
         average: average,
-        FrameRate: new FrameRate(),
-        GameTime: new GameTime()
+        frameRate: new FrameRate(),
+        gameTime: new GameTime()
     };
 });
