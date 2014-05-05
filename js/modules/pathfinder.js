@@ -1,12 +1,13 @@
 define([
     'class',
+    'modules/grid-m',
     'modules/tile'
-], function(Class, Tile) {
+], function(Class, grid, Tile) {
 
     var Pathfinder = Class.extend({
-        init: function (tiles) {
+        init: function () {
             this.path = [],
-            this.tiles = tiles;
+            this.tiles = grid.get('tiles');
         },
 
         clearPath: function () {
@@ -76,5 +77,5 @@ define([
         }
     });
     
-	return Pathfinder;
+	return new Pathfinder();
 });

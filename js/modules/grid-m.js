@@ -57,5 +57,5 @@ define([
         
 	});
 	
-	return Grid;
+	return new Grid();
 });
