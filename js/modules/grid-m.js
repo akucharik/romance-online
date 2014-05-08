@@ -18,7 +18,12 @@ define([
             for (var x = 0; x < tilesX; x++) {
                 this.get('tiles')[x] = [];
                 for (var y = 0; y < tilesY; y++) {
-                    var newTile = new Tile(x, y, false);
+                    // TODO: temporarily create different tile types
+                    var options = {
+                        occupied: null,
+                        type: x % (Math.random() * 10) > 5 ? constants.tile.type.obstacle : constants.tile.type.normal
+                    }
+                    var newTile = new Tile(x, y, options);
                     this.get('tiles')[x].push(newTile);
                 };
             };

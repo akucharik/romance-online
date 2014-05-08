@@ -69,8 +69,11 @@ define([
             },
             
             this.events.onFocusedTileChange = function () {
-                if (grid.get('focusedTile') !== null) {
+                if (grid.get('focusedTile') !== null && grid.get('focusedTile').isMoveable()) {
                     pathfinder.findPath(grid.get('focusedTile'), stateManager.get('currentTurnCharacter'));
+                }
+                else {
+                    pathfinder.clearPath();
                 }
             },
             
@@ -94,7 +97,6 @@ define([
             $(this.canvas.foreground).on('click', engine.events.onCanvasClick);
             
             this.events.listenTo(grid, 'change:focusedTile', engine.events.onFocusedTileChange);
-            
         },
         
 
@@ -122,11 +124,10 @@ define([
         },
 
         renderGrid: function (canvasCtx) {
-            canvasCtx.fillStyle = 'rgba(200, 200, 200, 1.0)';
-
             for (var x = 0; x < grid.get('tiles').length; x++) {
                 for(var y = 0; y < grid.get('tiles')[x].length; y++) {
                     grid.drawTile(grid.get('tiles')[x][y], canvasCtx, constants.grid.tileIndent);
+                    canvasCtx.fillStyle = grid.get('tiles')[x][y].type === constants.tile.type.obstacle ? 'rgba(100, 100, 100, 1.0)' : 'rgba(200, 200, 200, 1.0)';
                     canvasCtx.fill();
                 };
             };

@@ -40,56 +40,59 @@ define([
 		},
         
         move: function () {
+            var endTile = this.get('path').slice([this.get('path').length - 1])[0];
             var stepTimer = null;
 
-            var stepTo = function (tile, self) {
+            var stepTo = function (tile, context) {
 
                 var targetX = tile.position.x + constants.grid.tileSize/2;
                 var targetY = tile.position.y + constants.grid.tileSize/2;
                 var increment = 6;
 
                 // move left
-                if (self.get('position').x > targetX) {
+                if (context.get('position').x > targetX) {
                     increment = Math.abs(increment) * -1;
-                    self.get('position').x += increment;
-                    if (self.get('position').x <= targetX) {
-                        self.get('position').x = targetX;
+                    context.get('position').x += increment;
+                    if (context.get('position').x <= targetX) {
+                        context.get('position').x = targetX;
                     }
                 }
 
                 // move right
-                if (self.get('position').x < targetX) {
+                if (context.get('position').x < targetX) {
                     increment = Math.abs(increment);
-                    self.get('position').x += increment;
-                    if (self.get('position').x >= targetX) {
-                        self.get('position').x = targetX;
+                    context.get('position').x += increment;
+                    if (context.get('position').x >= targetX) {
+                        context.get('position').x = targetX;
                     }
                 }
 
                 // move up
-                if (self.get('position').y > targetY) {
+                if (context.get('position').y > targetY) {
                     increment = Math.abs(increment) * -1;
-                    self.get('position').y += increment;
-                    if (self.get('position').y <= targetY) {
-                        self.get('position').y = targetY;
+                    context.get('position').y += increment;
+                    if (context.get('position').y <= targetY) {
+                        context.get('position').y = targetY;
                     }
                 }
 
                 // move down
-                if (self.get('position').y < targetY) {
+                if (context.get('position').y < targetY) {
                     increment = Math.abs(increment);
-                    self.get('position').y += increment;
-                    if (self.get('position').y >= targetY) {
-                        self.get('position').y = targetY;
+                    context.get('position').y += increment;
+                    if (context.get('position').y >= targetY) {
+                        context.get('position').y = targetY;
                     }
                 }
 
-                if (self.get('position').x === targetX && self.get('position').y === targetY) {
+                if (context.get('position').x === targetX && context.get('position').y === targetY) {
                     clearInterval(stepTimer);
-                    self.set('currentTile', tile);
-                    self.get('path').shift();
+                    if (context.get('path').length === 1) {
+                        context.set('currentTile', endTile);
+                    }
+                    context.get('path').shift();
                     // recursive: move to next tile in path
-                    self.move();
+                    context.move();
                 }
 
             };
@@ -104,6 +107,15 @@ define([
             }
         },
         
+        onCurrentTileChange: function () {
+            if (this.previous('currentTile') !== null) {
+                this.previous('currentTile').occupied = null;
+            }
+            this.get('currentTile').occupied = this;
+            
+            return this.currentTile;
+        },
+        
         setStartPosition: function (tile) {
             this.set('currentTile', tile);
             this.set('position', new Position(this.get('currentTile').position.x + constants.grid.tileSize/2, this.get('currentTile').position.y + constants.grid.tileSize/2));
@@ -111,12 +123,14 @@ define([
 	});
     
 	var CharacterList = Backbone.Collection.extend({
-		
-		addCharacter: function(sprite) {
+        
+		addCharacter: function (sprite) {
 			var character = new Character({
                 sprite: sprite
 			});
 			
+            character.on('change:currentTile', character.onCurrentTileChange);
+            
 			this.add(character);
 			return character;
 		}

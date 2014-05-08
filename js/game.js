@@ -5,10 +5,11 @@ define([
     'modules/battle-v',
     'modules/character-m',
 	'modules/characterBattle-v',
+    'modules/grid-m',
     'modules/utilities-m',
     'modules/utilities-v'
     
-], function($, Engine, BattleModel, BattleView, CharacterModel, CharacterBattleView, UtilitiesModel, UtilitiesView) {
+], function($, Engine, BattleModel, BattleView, CharacterModel, CharacterBattleView, grid, UtilitiesModel, UtilitiesView) {
     
     //'use strict';
     
@@ -19,6 +20,7 @@ define([
     Battle.Characters = CharacterModel;
     Battle.Utilities = UtilitiesModel;
     Battle.Battle = BattleModel;
+    Battle.Grid = grid;
     
     Engine.init();
 });

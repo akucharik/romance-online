@@ -25,7 +25,7 @@ define([
                 var deltaTileRow = currentTile.gridPosition.y - endTile.gridPosition.y;
 
                 // default the next position to the current position
-                var nextTile = new Tile(currentTile.gridPosition.x, currentTile.gridPosition.y, false);
+                var nextTile = new Tile(currentTile.gridPosition.x, currentTile.gridPosition.y);
 
                 // determine next tile to step to
                 if (Math.abs(deltaTileRow) >= Math.abs(deltaTileCol)) {

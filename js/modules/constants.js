@@ -19,6 +19,13 @@ define(function() {
             selectedTileFillStyle: 'rgba(255, 200, 100, 1.0)',
             tileIndent: 4,
             tileSize: 72
+        },
+        
+        tile: {
+            type: {
+                normal: 1,
+                obstacle: 2
+            }
         }
         
     }
