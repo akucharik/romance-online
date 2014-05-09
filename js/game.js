@@ -1,26 +1,22 @@
 define([
 	'jquery',
-    'modules/engine',
     'modules/battle-m',
     'modules/battle-v',
     'modules/character-m',
-	'modules/characterBattle-v',
-    'modules/grid-m',
-    'modules/utilities-m',
-    'modules/utilities-v'
-    
-], function($, Engine, BattleModel, BattleView, CharacterModel, CharacterBattleView, grid, UtilitiesModel, UtilitiesView) {
+    'modules/grid-m'
+], function($, battle, battleView, characters, grid) {
     
     //'use strict';
     
-    if (typeof(Battle) === 'undefined') {
-        window.Battle = {};
+    if (typeof(battle) === 'undefined') {
+        window.battle = {};
     }
     // TODO: Eventually remove this. Used to expose models for testing/development.
-    Battle.Characters = CharacterModel;
-    Battle.Utilities = UtilitiesModel;
-    Battle.Battle = BattleModel;
-    Battle.Grid = grid;
+    battle.characters = characters;
+    battle.battle = battle;
+    battle.grid = grid;
     
-    Engine.init();
+    // TODO: battleView currently needs to be exposed until rendering is refactored
+    battle.battleView = battleView;
+    
 });
