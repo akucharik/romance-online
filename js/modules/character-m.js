@@ -1,8 +1,7 @@
 define([
 	'backbone',
-    'modules/constants',
-    'modules/position'
-], function(Backbone, constants, Position) {
+    'modules/constants'
+], function(Backbone, constants) {
 
     var Attributes = Backbone.Model.extend({
         defaults: {
@@ -18,13 +17,15 @@ define([
             currentTile: null,
             movementRange: 7,
             path: [],
-            position: null,
+            //position: null,
             sprite: {
                 x: 0,
                 y: 0,
             },
             spritesheet: document.getElementById('spritesheet'),
-            velocity: 200
+            velocity: 200,
+            x: null,
+            y: null
 		},
         
 		updateAttribute: function(attribute, change) {
@@ -45,47 +46,49 @@ define([
 
             var stepTo = function (tile, context) {
 
-                var targetX = tile.position.x + constants.grid.tileSize/2;
-                var targetY = tile.position.y + constants.grid.tileSize/2;
+                var targetX = tile.x + constants.grid.tileSize/2;
+                var targetY = tile.y + constants.grid.tileSize/2;
                 var increment = 6;
+                var x = context.get('x');
+                var y = context.get('y');
 
                 // move left
-                if (context.get('position').x > targetX) {
+                if (x > targetX) {
                     increment = Math.abs(increment) * -1;
-                    context.get('position').x += increment;
-                    if (context.get('position').x <= targetX) {
-                        context.get('position').x = targetX;
+                    context.set('x', x + increment);
+                    if (x <= targetX) {
+                        context.set('x', targetX);
                     }
                 }
 
                 // move right
-                if (context.get('position').x < targetX) {
+                if (x < targetX) {
                     increment = Math.abs(increment);
-                    context.get('position').x += increment;
-                    if (context.get('position').x >= targetX) {
-                        context.get('position').x = targetX;
+                    context.set('x', x + increment);
+                    if (x >= targetX) {
+                        context.set('x', targetX);
                     }
                 }
 
                 // move up
-                if (context.get('position').y > targetY) {
+                if (y > targetY) {
                     increment = Math.abs(increment) * -1;
-                    context.get('position').y += increment;
-                    if (context.get('position').y <= targetY) {
-                        context.get('position').y = targetY;
+                    context.set('y', y + increment);
+                    if (y <= targetY) {
+                        context.set('y', targetY);
                     }
                 }
 
                 // move down
-                if (context.get('position').y < targetY) {
+                if (y < targetY) {
                     increment = Math.abs(increment);
-                    context.get('position').y += increment;
-                    if (context.get('position').y >= targetY) {
-                        context.get('position').y = targetY;
+                    context.set('y', y + increment);
+                    if (y >= targetY) {
+                        context.set('y', targetY);
                     }
                 }
 
-                if (context.get('position').x === targetX && context.get('position').y === targetY) {
+                if (x === targetX && y === targetY) {
                     clearInterval(stepTimer);
                     if (context.get('path').length === 1) {
                         context.set('currentTile', endTile);
@@ -118,7 +121,8 @@ define([
         
         setStartPosition: function (tile) {
             this.set('currentTile', tile);
-            this.set('position', new Position(this.get('currentTile').position.x + constants.grid.tileSize/2, this.get('currentTile').position.y + constants.grid.tileSize/2));
+            this.set('x', this.get('currentTile').x + constants.grid.tileSize/2);
+            this.set('y', this.get('currentTile').y + constants.grid.tileSize/2);
         } 
 	});
     

@@ -1,29 +1,33 @@
 define([
     'class',
-    'modules/constants',
-    'modules/position'
-], function(Class, constants, Position) {
+    'modules/constants'
+], function(Class, constants) {
 
     var Tile = Class.extend({
         init: function (gridX, gridY, options) {
-            if (typeof options !== 'object') {
-                var options = {
-                    occupied: null,
-                    type: constants.tile.type.normal
-                }
-            }
+            options = options || {};
 
             this.distanceValues = {};
-            this.gridPosition = new Position(gridX, gridY);
-            this.occupied = typeof options.occupied === 'undefined' ? null : options.occupied;
-            this.position = new Position(gridX * constants.grid.tileSize, gridY * constants.grid.tileSize);
-            this.type = typeof options.type === 'undefined' ? null : options.type;
+            this.gridX = gridX;
+            this.gridY = gridY;
+            this.occupied = options.occupied || null;
+            this.type = options.type || null;
+            this.x = gridX * constants.grid.tileSize;
+            this.y = gridY * constants.grid.tileSize;
             
             this.setMovementValue();
         },
         
+        buildKey: function (x, y) {
+            return x + '_' + y;
+        },
+        
+        getDistanceValue: function (x, y) {
+            return this.distanceValues[this.buildKey(x, y)];
+        },
+        
         isEqual: function (tile) {
-            if (this.gridPosition.x === tile.gridPosition.x && this.gridPosition.y === tile.gridPosition.y) {
+            if (this.gridX === tile.gridX && this.gridY === tile.gridY) {
                 return true;
             } else {
                 return false;
@@ -37,10 +41,6 @@ define([
             else {
                 return false;
             }
-        },
-        
-        getDistanceValue: function (x, y) {
-            return this.distanceValues[x + '_' + y];
         },
         
         setMovementValue: function () {

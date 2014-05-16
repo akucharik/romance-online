@@ -19,16 +19,16 @@ define([
                     // TODO: temporarily create different tile types
                     var options = {
                         occupied: null,
-                        type: this.determineTileType(x) //x % (Math.random() * 10) > 5 ? constants.tile.type.obstacle : constants.tile.type.normal
+                        type: this.getTileType(x) //x % (Math.random() * 10) > 5 ? constants.tile.type.obstacle : constants.tile.type.normal
                     }
                     var newTile = new Tile(x, y, options);
-                    this.get('tiles')[x + '_' + y] = newTile;
+                    this.get('tiles')[Tile.prototype.buildKey(x, y)] = newTile;
                 }
             }
             this.setDistanceValues();
         },
         
-        determineTileType: function (tileX) {
+        getTileType: function (tileX) {
             var x = tileX % (Math.random() * 10)
             switch (true) {
                 case x > 5:
@@ -41,7 +41,7 @@ define([
         },
         
         getTile: function (x, y) {
-            return this.get('tiles')[x + '_' + y];
+            return this.get('tiles')[Tile.prototype.buildKey(x, y)];
         },
         
         getOccupiedTiles: function () {
@@ -83,7 +83,7 @@ define([
             for (var i in tiles) {
                 var distanceValues = {};
                 for (var j in tiles) {
-                    var distanceValue = Math.abs(tiles[i].gridPosition.x - tiles[j].gridPosition.x) + Math.abs(tiles[i].gridPosition.y - tiles[j].gridPosition.y);
+                    var distanceValue = Math.abs(tiles[i].gridX - tiles[j].gridX) + Math.abs(tiles[i].gridY - tiles[j].gridY);
                     distanceValues[j] = distanceValue;
                 }
                 tiles[i].distanceValues = distanceValues;
@@ -94,7 +94,7 @@ define([
             if (tile !== undefined && tile !== null) {
                 var indent = (indentValue === undefined ? 0 : indentValue);
                 canvasCtx.beginPath();
-                canvasCtx.rect(tile.position.x + indent/2, tile.position.y + indent/2, constants.grid.tileSize - indent, constants.grid.tileSize - indent);
+                canvasCtx.rect(tile.x + indent/2, tile.y + indent/2, constants.grid.tileSize - indent, constants.grid.tileSize - indent);
             }
         }
         

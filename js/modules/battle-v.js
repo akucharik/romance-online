@@ -6,7 +6,6 @@ define([
     'modules/constants',
     'modules/grid-m',
     'modules/pathfinder',
-    'modules/position',
     'modules/stateManager-m',
     'modules/stateManager-v',
     'modules/utilities-m',
@@ -18,8 +17,7 @@ define([
     characters, 
     constants, 
     grid, 
-    pathfinder, 
-    Position, 
+    pathfinder,
     stateManager, 
     stateManagerView, 
     utilities, 
@@ -104,31 +102,30 @@ define([
             characters.forEach(function (e, i) {
                 var spriteWidth = 16;
                 var spriteHeight = 25;
-                canvasCtx.drawImage(e.get('spritesheet'), e.get('sprite').x, e.get('sprite').y, spriteWidth, spriteHeight, e.get('position').x - spriteWidth, e.get('position').y - spriteHeight, spriteWidth*2, spriteHeight*2);
+                canvasCtx.drawImage(e.get('spritesheet'), e.get('sprite').x, e.get('sprite').y, spriteWidth, spriteHeight, e.get('x') - spriteWidth, e.get('y') - spriteHeight, spriteWidth*2, spriteHeight*2);
             });
         },
 
         renderGrid: function (canvasCtx) {
-            var determineFillStyle = function (type) {
+            var getFillStyle = function (type) {
                 switch (type) {
                     case constants.tile.type.obstacle:
                         return 'rgba(100, 100, 100, 1.0)';
                     case constants.tile.type.tree:
-                        return 'rgba(100, 200, 100, 1.0)';
+                        return 'rgba(50, 150, 50, 1.0)';
                     default:
-                        return 'rgba(200, 175, 125, 1.0)';
+                        return 'rgba(100, 200, 100, 1.0)';
                 }
             };
             
             for (var i in grid.get('tiles')) {
                 grid.drawTile(grid.get('tiles')[i], canvasCtx, constants.grid.tileIndent);
-                canvasCtx.fillStyle = determineFillStyle(grid.get('tiles')[i].type);
-                //canvasCtx.fillStyle = grid.get('tiles')[i].type === constants.tile.type.obstacle ? 'rgba(100, 100, 100, 1.0)' : 'rgba(200, 200, 200, 1.0)';
+                canvasCtx.fillStyle = getFillStyle(grid.get('tiles')[i].type);
                 canvasCtx.fill();
                 
                 canvasCtx.fillStyle = 'rgba(0, 0, 0, 1.0)';
                 canvasCtx.font = "10px Arial";
-                canvasCtx.fillText(i, grid.get('tiles')[i].position.x + 6 , grid.get('tiles')[i].position.y + 15);
+                canvasCtx.fillText(i, grid.get('tiles')[i].x + 6 , grid.get('tiles')[i].y + 15);
             };
         },
         

@@ -21,30 +21,30 @@ define([
             var newPath = [];
 
             for (var i = 0; i < character.get('movementRange'); i++) {
-                var deltaTileCol = currentTile.gridPosition.x - endTile.gridPosition.x;
-                var deltaTileRow = currentTile.gridPosition.y - endTile.gridPosition.y;
+                var deltaTileCol = currentTile.gridX - endTile.gridX;
+                var deltaTileRow = currentTile.gridY - endTile.gridY;
 
                 // default the next position to the current position
-                var nextTile = new Tile(currentTile.gridPosition.x, currentTile.gridPosition.y);
+                var nextTile = new Tile(currentTile.gridX, currentTile.gridY);
 
                 // determine next tile to step to
                 if (Math.abs(deltaTileRow) >= Math.abs(deltaTileCol)) {
                     if (deltaTileRow < 0) {
-                        nextTile.gridPosition.y++;
+                        nextTile.gridY++;
                     }
                     if (deltaTileRow > 0) {
-                        nextTile.gridPosition.y--;
+                        nextTile.gridY--;
                     }
                 }
                 if (Math.abs(deltaTileCol) > Math.abs(deltaTileRow)) {
                     if (deltaTileCol < 0) {
-                        nextTile.gridPosition.x++;
+                        nextTile.gridX++;
                     }
                     if (deltaTileCol > 0) {
-                        nextTile.gridPosition.x--;
+                        nextTile.gridX--;
                     }
                 }
-                currentTile = grid.getTile(nextTile.gridPosition.x, nextTile.gridPosition.y);
+                currentTile = grid.getTile(nextTile.gridX, nextTile.gridY);
                 newPath.push(currentTile);
 
                 // end path
@@ -60,6 +60,10 @@ define([
             else {
                 this.path = [];
             }
+        },
+        
+        newFindPath: function () {
+        
         },
 
         isTileInPath: function (tile) {
