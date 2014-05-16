@@ -3,20 +3,22 @@ define([
     'modules/battle-m',
     'modules/battle-v',
     'modules/character-m',
-    'modules/grid-m'
-], function($, battle, battleView, characters, grid) {
+    'modules/grid-m',
+    'modules/pathfinder'
+], function($, battle, battleView, characters, grid, pathfinder) {
     
     //'use strict';
     
-    if (typeof(battle) === 'undefined') {
-        window.battle = {};
+    if (typeof(Battle) === 'undefined') {
+        window.Battle = {};
     }
     // TODO: Eventually remove this. Used to expose models for testing/development.
-    battle.characters = characters;
-    battle.battle = battle;
-    battle.grid = grid;
+    Battle.characters = characters;
+    Battle.battle = battle;
+    Battle.grid = grid;
+    Battle.pathfinder = pathfinder;
     
     // TODO: battleView currently needs to be exposed until rendering is refactored
-    battle.battleView = battleView;
+    Battle.battleView = battleView;
     
 });

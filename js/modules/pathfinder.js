@@ -44,7 +44,7 @@ define([
                         nextTile.gridPosition.x--;
                     }
                 }
-                currentTile = this.tiles[nextTile.gridPosition.x][nextTile.gridPosition.y];
+                currentTile = grid.getTile(nextTile.gridPosition.x, nextTile.gridPosition.y);
                 newPath.push(currentTile);
 
                 // end path
@@ -57,7 +57,7 @@ define([
             if (endTile.isEqual(newPath[newPath.length - 1])) {
                 this.path = newPath;
             }
-            else { 
+            else {
                 this.path = [];
             }
         },

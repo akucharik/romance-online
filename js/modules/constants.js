@@ -3,8 +3,10 @@ define(function() {
     var constants = {
         
         canvas: {
-            height: 720,
-            width: 1080
+//            height: 720,
+//            width: 1080
+            height: 504,
+            width: 720
         },
         
         character: {
@@ -24,7 +26,8 @@ define(function() {
         tile: {
             type: {
                 normal: 1,
-                obstacle: 2
+                obstacle: 2,
+                tree: 3
             }
         }
         

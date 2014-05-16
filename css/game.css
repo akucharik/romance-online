@@ -1,13 +1,13 @@
 body {
     background-color: rgb(50,50,50);
     font-family: sans-serif;
-    margin: 2.0em;
+    margin: 1.0em;
 }
 
 .canvas {
-     margin: 1.0em auto;
+     margin: 0 auto;
      position: relative;
-     width: 1080px;
+     width: 720px;
 }
 
 .canvas-background {

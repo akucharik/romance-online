@@ -13,10 +13,13 @@ define([
                 }
             }
 
+            this.distanceValues = {};
             this.gridPosition = new Position(gridX, gridY);
-            this.position = new Position(gridX * constants.grid.tileSize, gridY * constants.grid.tileSize);
             this.occupied = typeof options.occupied === 'undefined' ? null : options.occupied;
+            this.position = new Position(gridX * constants.grid.tileSize, gridY * constants.grid.tileSize);
             this.type = typeof options.type === 'undefined' ? null : options.type;
+            
+            this.setMovementValue();
         },
         
         isEqual: function (tile) {
@@ -33,6 +36,23 @@ define([
             }
             else {
                 return false;
+            }
+        },
+        
+        getDistanceValue: function (x, y) {
+            return this.distanceValues[x + '_' + y];
+        },
+        
+        setMovementValue: function () {
+            switch (this.type) {
+                case constants.tile.type.obstacle:
+                    this.movementValue = null;
+                    break;
+                case constants.tile.type.tree:
+                    this.movementValue = 20;
+                    break;
+                default:
+                    this.movementValue = 10;
             }
         }
         

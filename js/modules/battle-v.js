@@ -44,9 +44,9 @@ define([
             battle.set('foregroundCtx', battle.get('foreground').getContext('2d'));
             battle.get('foreground').width = constants.canvas.width;
             battle.get('foreground').height = constants.canvas.height;
-            
-            characters.addCharacter({x: 205, y: 486}).setStartPosition(grid.get('tiles')[2][2]);
-            characters.addCharacter({x: 313, y: 143}).setStartPosition(grid.get('tiles')[10][3]);
+
+            characters.addCharacter({x: 205, y: 486}).setStartPosition(grid.getTile(1, 1));
+            characters.addCharacter({x: 313, y: 143}).setStartPosition(grid.getTile(3, 2));
             stateManager.set('currentTurnCharacter', characters.at(0));
             grid.set('selectedTile', stateManager.get('currentTurnCharacter').get('currentTile'));
             
@@ -82,11 +82,12 @@ define([
         },
         
         onFocusedTileChange: function () {
-            if (grid.get('focusedTile') !== null && grid.get('focusedTile').isMoveable()) {
-                pathfinder.findPath(grid.get('focusedTile'), stateManager.get('currentTurnCharacter'));
-            }
-            else {
+            var focusedTile = grid.get('focusedTile');
+            if (!focusedTile) {
                 pathfinder.clearPath();
+            }
+            else if (focusedTile.isMoveable()) {
+                pathfinder.findPath(focusedTile, stateManager.get('currentTurnCharacter'));
             }
         },
         
@@ -108,12 +109,26 @@ define([
         },
 
         renderGrid: function (canvasCtx) {
-            for (var x = 0; x < grid.get('tiles').length; x++) {
-                for(var y = 0; y < grid.get('tiles')[x].length; y++) {
-                    grid.drawTile(grid.get('tiles')[x][y], canvasCtx, constants.grid.tileIndent);
-                    canvasCtx.fillStyle = grid.get('tiles')[x][y].type === constants.tile.type.obstacle ? 'rgba(100, 100, 100, 1.0)' : 'rgba(200, 200, 200, 1.0)';
-                    canvasCtx.fill();
-                };
+            var determineFillStyle = function (type) {
+                switch (type) {
+                    case constants.tile.type.obstacle:
+                        return 'rgba(100, 100, 100, 1.0)';
+                    case constants.tile.type.tree:
+                        return 'rgba(100, 200, 100, 1.0)';
+                    default:
+                        return 'rgba(200, 175, 125, 1.0)';
+                }
+            };
+            
+            for (var i in grid.get('tiles')) {
+                grid.drawTile(grid.get('tiles')[i], canvasCtx, constants.grid.tileIndent);
+                canvasCtx.fillStyle = determineFillStyle(grid.get('tiles')[i].type);
+                //canvasCtx.fillStyle = grid.get('tiles')[i].type === constants.tile.type.obstacle ? 'rgba(100, 100, 100, 1.0)' : 'rgba(200, 200, 200, 1.0)';
+                canvasCtx.fill();
+                
+                canvasCtx.fillStyle = 'rgba(0, 0, 0, 1.0)';
+                canvasCtx.font = "10px Arial";
+                canvasCtx.fillText(i, grid.get('tiles')[i].position.x + 6 , grid.get('tiles')[i].position.y + 15);
             };
         },
         
@@ -166,9 +181,9 @@ define([
             utilities.frameRate.set('lastCalledTime', utilities.frameRate.get('currentTime'));
             utilities.gameTime.setGameTime(deltaFrameTime);
 
-            battle.battleView.update(deltaFrameTime);
-            battle.battleView.render();
-            requestAnimationFrame(battle.battleView.buildFrame);
+            Battle.battleView.update(deltaFrameTime);
+            Battle.battleView.render();
+            requestAnimationFrame(Battle.battleView.buildFrame);
         }
         
 	});
