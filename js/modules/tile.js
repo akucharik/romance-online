@@ -10,6 +10,8 @@ define([
             this.distanceValues = {};
             this.gridX = gridX;
             this.gridY = gridY;
+            this.id = this.buildKey(gridX, gridY);
+            this.movementValue = null;
             this.occupied = options.occupied || null;
             this.type = options.type || null;
             this.x = gridX * constants.grid.tileSize;
@@ -49,10 +51,10 @@ define([
                     this.movementValue = null;
                     break;
                 case constants.tile.type.tree:
-                    this.movementValue = 20;
+                    this.movementValue = constants.tile.movementValue.tree;
                     break;
                 default:
-                    this.movementValue = 10;
+                    this.movementValue = constants.tile.movementValue.base;
             }
         }
         

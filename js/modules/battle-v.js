@@ -25,6 +25,7 @@ define([
 
 	var BattleView = Backbone.View.extend({
 		el: '#foreground',
+        characterMovementRange: {},
 		
 		initialize: function() {
             
@@ -43,13 +44,15 @@ define([
             battle.get('foreground').width = constants.canvas.width;
             battle.get('foreground').height = constants.canvas.height;
 
+            // set up events
+            this.listenTo(stateManager, 'change:currentTurnCharacter', this.onTurnChange);
+            this.listenTo(grid, 'change:focusedTile', this.onFocusedTileChange);
+            
+            // set up state
             characters.addCharacter({x: 205, y: 486}).setStartPosition(grid.getTile(1, 1));
             characters.addCharacter({x: 313, y: 143}).setStartPosition(grid.getTile(3, 2));
             stateManager.set('currentTurnCharacter', characters.at(0));
             grid.set('selectedTile', stateManager.get('currentTurnCharacter').get('currentTile'));
-            
-            // set up events
-            this.listenTo(grid, 'change:focusedTile', this.onFocusedTileChange);
             
             // start rendering engine
             requestAnimationFrame(this.buildFrame);
@@ -68,7 +71,18 @@ define([
                 stateManager.get('currentTurnCharacter').move();
             }
         },
-            
+        
+        onFocusedTileChange: function () {
+            var focusedTile = grid.get('focusedTile');
+            if (!focusedTile) {
+                pathfinder.clearPath();
+            }
+            else if (focusedTile.isMoveable()) {
+                //pathfinder.findRange(stateManager.get('currentTurnCharacter'));
+                //pathfinder.newFindPath(focusedTile, stateManager.get('currentTurnCharacter'));
+            }
+        },
+        
         onMouseMove: function (event) {
             grid.set('focusedTile', grid.hitTest(event, battle.get('background')));
         },
@@ -79,15 +93,11 @@ define([
             pathfinder.clearPath();
         },
         
-        onFocusedTileChange: function () {
-            var focusedTile = grid.get('focusedTile');
-            if (!focusedTile) {
-                pathfinder.clearPath();
-            }
-            else if (focusedTile.isMoveable()) {
-                pathfinder.findPath(focusedTile, stateManager.get('currentTurnCharacter'));
-            }
+        onTurnChange: function () {
+            this.characterMovementRange = pathfinder.findRange(stateManager.get('currentTurnCharacter'));
+            console.log('turn changed: ', this.characterMovementRange);
         },
+        
         
         
         
@@ -150,6 +160,18 @@ define([
                 canvasCtx.stroke();	
             }
         },
+        
+        renderMovement: function (tiles, canvasCtx) {
+            //console.log('render movement tiles: ', tiles);
+            if (tiles) {
+                canvasCtx.fillStyle = constants.grid.pathFillStyle;
+                for (var i in tiles) {
+                    //console.log('render tile: ', i);
+                    grid.drawTile(tiles[i], canvasCtx, constants.grid.tileIndent);
+                    canvasCtx.fill();
+                }
+            }
+        },
 
         renderSelectedTile: function (tile, canvasCtx) {
             //TODO: research if should use "!== undefined" or "typeof x !== 'undefined'"
@@ -164,7 +186,8 @@ define([
         render: function () {
             battle.get('foregroundCtx').clearRect(0, 0, constants.canvas.width, constants.canvas.height);
             this.renderSelectedTile(grid.get('selectedTile'), battle.get('foregroundCtx'));
-            this.renderPaths([pathfinder.path, stateManager.get('currentTurnCharacter').get('path')], battle.get('foregroundCtx'));
+            this.renderMovement(this.characterMovementRange, battle.get('foregroundCtx'));
+            //this.renderPaths([pathfinder.path, stateManager.get('currentTurnCharacter').get('path')], battle.get('foregroundCtx'));
             this.renderFocusedTile(grid.get('focusedTile'), battle.get('foregroundCtx'));
             this.renderCharacter(battle.get('foregroundCtx'));
         },

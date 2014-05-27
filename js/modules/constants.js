@@ -24,8 +24,12 @@ define(function() {
         },
         
         tile: {
+            movementValue: {
+                base: 1,
+                tree: 3
+            },
             type: {
-                normal: 1,
+                base: 1,
                 obstacle: 2,
                 tree: 3
             }

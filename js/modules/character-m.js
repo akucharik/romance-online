@@ -15,7 +15,7 @@ define([
 		defaults: {
             attributes: new Attributes(),
             currentTile: null,
-            movementRange: 7,
+            movementRange: 4,
             path: [],
             //position: null,
             sprite: {

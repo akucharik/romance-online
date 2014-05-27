@@ -36,7 +36,7 @@ define([
                 case x > 2 && x < 5:
                     return constants.tile.type.tree;
                 default:
-                    return constants.tile.type.normal;
+                    return constants.tile.type.base;
             }
         },
         
