@@ -79,7 +79,7 @@ define([
             }
             else if (focusedTile.isMoveable()) {
                 //pathfinder.findRange(stateManager.get('currentTurnCharacter'));
-                //pathfinder.newFindPath(focusedTile, stateManager.get('currentTurnCharacter'));
+                pathfinder.findPath(focusedTile, stateManager.get('currentTurnCharacter'));
             }
         },
         
@@ -95,7 +95,6 @@ define([
         
         onTurnChange: function () {
             this.characterMovementRange = pathfinder.findRange(stateManager.get('currentTurnCharacter'));
-            console.log('turn changed: ', this.characterMovementRange);
         },
         
         
@@ -187,7 +186,7 @@ define([
             battle.get('foregroundCtx').clearRect(0, 0, constants.canvas.width, constants.canvas.height);
             this.renderSelectedTile(grid.get('selectedTile'), battle.get('foregroundCtx'));
             this.renderMovement(this.characterMovementRange, battle.get('foregroundCtx'));
-            //this.renderPaths([pathfinder.path, stateManager.get('currentTurnCharacter').get('path')], battle.get('foregroundCtx'));
+            this.renderPaths([pathfinder.path, stateManager.get('currentTurnCharacter').get('path')], battle.get('foregroundCtx'));
             this.renderFocusedTile(grid.get('focusedTile'), battle.get('foregroundCtx'));
             this.renderCharacter(battle.get('foregroundCtx'));
         },
