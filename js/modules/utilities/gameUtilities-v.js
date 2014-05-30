@@ -2,12 +2,12 @@ define([
 	'jquery',
 	'backbone',
     'modules/utilities/frameRate-v',
-    'modules/utilities/time-v'
+    'modules/utilities/gameTime-v'
 ], function(
     $, 
     Backbone,
     FrameRateView,
-    TimeView
+    GameTimeView
 ) {
 
 	var GameUtilitiesView = Backbone.View.extend({
@@ -17,7 +17,7 @@ define([
                 model: this.model,
                 el: document.querySelector('#frameRate')
             });
-            this.time = new TimeView({
+            this.gameTime = new GameTimeView({
                 model: this.model,
                 el: document.querySelector('#gameTime')
             });

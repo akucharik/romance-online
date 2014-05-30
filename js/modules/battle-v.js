@@ -204,7 +204,7 @@ define([
         buildFrame: function () {
             Battle.battleView.gameUtilitiesModel.time.set('previousFrameTime', Battle.battleView.gameUtilitiesModel.time.get('currentFrameTime'));
             Battle.battleView.gameUtilitiesModel.time.set('currentFrameTime', Date.now());
-            Battle.battleView.gameUtilitiesModel.time.set('deltaFrameTime', Battle.battleView.gameUtilitiesView.time.calculateDeltaFrameTime());
+            Battle.battleView.gameUtilitiesModel.time.set('deltaFrameTime', Battle.battleView.gameUtilitiesView.gameTime.calculateDeltaFrameTime());
             Battle.battleView.gameUtilitiesModel.time.set('gameTime', Battle.battleView.gameUtilitiesModel.time.get('gameTime') + Battle.battleView.gameUtilitiesModel.time.get('deltaFrameTime'));
             Battle.battleView.update(Battle.battleView.gameUtilitiesModel.time.get('deltaFrameTime'));
             Battle.battleView.render();
