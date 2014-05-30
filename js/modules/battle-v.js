@@ -8,8 +8,8 @@ define([
     'modules/pathfinder',
     'modules/stateManager-m',
     'modules/stateManager-v',
-    'modules/utilities-m',
-    'modules/utilities-v'
+    'modules/utilities/gameUtilities-m',
+    'modules/utilities/gameUtilities-v'
 ], function (
     $, 
     Backbone,
@@ -20,14 +20,22 @@ define([
     pathfinder,
     stateManager, 
     stateManagerView, 
-    utilities, 
-    utilitiesView) {
+    GameUtilitiesModel, 
+    GameUtilitiesView) {
 
 	var BattleView = Backbone.View.extend({
 		el: '#foreground',
         characterMovementRange: {},
-		
+        gameUtilities: {},
+        gameUtilitiesView: {},
+        
 		initialize: function() {
+            
+            this.gameUtilitiesModel = new GameUtilitiesModel();
+            this.gameUtilitiesView = new GameUtilitiesView({ 
+                model: this.gameUtilitiesModel,
+                el: '#gameUtilities'
+            });
             
             // init background
             battle.set('background', document.getElementById('background'));
@@ -192,15 +200,13 @@ define([
         },
 
         // TODO: Possbily refactor renderer into a standalone object
+        // TODO: Don't like absolute gameUtilities calls are referenced due to requestAnimationFrame being on the window object
         buildFrame: function () {
-            utilities.frameRate.set('currentTime', Date.now());
-            var deltaFrameTime = (utilities.frameRate.get('currentTime') - utilities.frameRate.get('lastCalledTime')) / 1000;
-            utilities.frameRate.logFrameRate(utilities.frameRate.calculateCurrentFrameRate());
-            utilities.frameRate.setAverageFrameRate();
-            utilities.frameRate.set('lastCalledTime', utilities.frameRate.get('currentTime'));
-            utilities.gameTime.setGameTime(deltaFrameTime);
-
-            Battle.battleView.update(deltaFrameTime);
+            Battle.battleView.gameUtilitiesModel.time.set('previousFrameTime', Battle.battleView.gameUtilitiesModel.time.get('currentFrameTime'));
+            Battle.battleView.gameUtilitiesModel.time.set('currentFrameTime', Date.now());
+            Battle.battleView.gameUtilitiesModel.time.set('deltaFrameTime', Battle.battleView.gameUtilitiesView.time.calculateDeltaFrameTime());
+            Battle.battleView.gameUtilitiesModel.time.set('gameTime', Battle.battleView.gameUtilitiesModel.time.get('gameTime') + Battle.battleView.gameUtilitiesModel.time.get('deltaFrameTime'));
+            Battle.battleView.update(Battle.battleView.gameUtilitiesModel.time.get('deltaFrameTime'));
             Battle.battleView.render();
             requestAnimationFrame(Battle.battleView.buildFrame);
         }
