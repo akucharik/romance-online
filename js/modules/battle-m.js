@@ -1,16 +1,15 @@
 define([
 	'backbone'
-], function(Backbone) {
+], function(
+    Backbone
+) {
     
 	var Battle = Backbone.Model.extend({
 		defaults: {
-            background: null,
-            backgroundCtx: null,
-            foreground: null,
-            foregroundCtx: null
+
 		}
         
 	});
 	
-	return new Battle();
+	return Battle;
 });
