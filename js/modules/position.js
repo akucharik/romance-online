@@ -1,6 +1,8 @@
 define([
     'class'
-], function(Class) {
+], function(
+    Class
+) {
 
     var Position = Class.extend({
         init: function (x, y) {

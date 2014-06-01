@@ -1,7 +1,10 @@
 define([
     'class',
     'modules/constants'
-], function(Class, constants) {
+], function(
+    Class, 
+    constants
+) {
 
     var Tile = Class.extend({
         init: function (gridX, gridY, options) {

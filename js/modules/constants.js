@@ -23,6 +23,12 @@ define(function() {
             tileSize: 72
         },
         
+        stateManager: {
+            characterMovementRange: {
+                empty: {}
+            }
+        },
+        
         tile: {
             movementValue: {
                 base: 1,

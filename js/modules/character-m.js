@@ -1,7 +1,10 @@
 define([
 	'backbone',
     'modules/constants'
-], function(Backbone, constants) {
+], function(
+    Backbone,
+    constants
+) {
 
     var Attributes = Backbone.Model.extend({
         defaults: {

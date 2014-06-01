@@ -26,7 +26,7 @@ define([
             this.path = [],
             this.tiles = grid.get('tiles');
         },
-
+        
         clearPath: function () {
             if(this.path.length > 0) {
                 this.path = [];

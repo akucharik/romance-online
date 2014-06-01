@@ -25,6 +25,22 @@ body {
     display: none;
 }
 
+
+/* Menu */
+.menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Character actions */
+.character-actions-menu {
+    left: 1.0em;
+    position: absolute;
+    top: 1.0em;
+}
+
+/* Game utilities */
 .statistic {
     background-color: rgba(0,0,0,0.7);
     border-radius: 0.5em;

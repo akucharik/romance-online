@@ -2,7 +2,10 @@ define([
 	'backbone',
     'modules/constants',
     'modules/tile'
-], function(Backbone, constants, Tile) {
+], function(
+    Backbone, 
+    constants,Tile
+) {
     
 	var Grid = Backbone.Model.extend({
 		defaults: {

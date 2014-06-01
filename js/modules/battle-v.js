@@ -1,69 +1,88 @@
 define([
 	'jquery',
     'backbone',
-    'modules/battle-m',
     'modules/character-m',
     'modules/constants',
     'modules/grid-m',
     'modules/pathfinder',
     'modules/stateManager-m',
-    'modules/stateManager-v',
+    'modules/turn/characterTurn-v',
     'modules/utilities/gameUtilities-m',
     'modules/utilities/gameUtilities-v'
 ], function (
     $, 
     Backbone,
-    battle,
     characters, 
     constants, 
     grid, 
     pathfinder,
-    stateManager, 
-    stateManagerView, 
+    StateManagerModel, 
+    CharacterTurnView,
     GameUtilitiesModel, 
-    GameUtilitiesView) {
+    GameUtilitiesView
+) {
 
 	var BattleView = Backbone.View.extend({
-		el: '#foreground',
-        characterMovementRange: {},
-        gameUtilities: {},
-        gameUtilitiesView: {},
+        // background
+        background: null,
+        $background: null,
+        backgroundCtx: null,
+        
+        // foreground
+        foreground: null,
+        $foreground: null,
+        foregroundCtx: null,
+        
+        // models
+        gameUtilitiesModel: null,
+        stateManagerModel:  null,
+        
+        // views
+        characterTurnView: null,
+        gameUtilitiesView: null,
         
 		initialize: function() {
-            
+            // set up models
             this.gameUtilitiesModel = new GameUtilitiesModel();
+            this.stateManagerModel = new StateManagerModel();
+
+            // set up views
+            this.characterTurnView = new CharacterTurnView({
+                model: this.stateManagerModel,
+                el: '#characterActionsMenu'
+            });
             this.gameUtilitiesView = new GameUtilitiesView({ 
                 model: this.gameUtilitiesModel,
                 el: '#gameUtilities'
             });
             
-            // init background
-            battle.set('background', document.getElementById('background'));
-            battle.set('$background', $(battle.get('background')));
-            battle.set('backgroundCtx', battle.get('background').getContext('2d'));
-            battle.get('background').width = constants.canvas.width;
-            battle.get('background').height = constants.canvas.height;
-            this.renderGrid(battle.get('backgroundCtx'));
+            // set up background
+            this.background = document.querySelector('#background');
+            this.$background = $(this.background);
+            this.backgroundCtx = this.background.getContext('2d');
+            this.background.width = constants.canvas.width;
+            this.background.height = constants.canvas.height;
+            this.renderGrid(this.backgroundCtx);
 
-            // init foreground
-            battle.set('foreground', document.getElementById('foreground'));
-            battle.set('$foreground', $(battle.get('foreground')));
-            battle.set('foregroundCtx', battle.get('foreground').getContext('2d'));
-            battle.get('foreground').width = constants.canvas.width;
-            battle.get('foreground').height = constants.canvas.height;
+            // set up foreground
+            this.foreground = document.querySelector('#foreground');
+            this.$foreground = $(this.foreground);
+            this.foregroundCtx = this.foreground.getContext('2d');
+            this.foreground.width = constants.canvas.width;
+            this.foreground.height = constants.canvas.height;
 
             // set up events
-            this.listenTo(stateManager, 'change:currentTurnCharacter', this.onTurnChange);
+            this.listenTo(this.stateManagerModel, 'change:currentTurnCharacter', this.onTurnChange);
             this.listenTo(grid, 'change:focusedTile', this.onFocusedTileChange);
             
             // set up state
             characters.addCharacter({x: 205, y: 486}).setStartPosition(grid.getTile(1, 1));
             characters.addCharacter({x: 313, y: 143}).setStartPosition(grid.getTile(3, 2));
-            stateManager.set('currentTurnCharacter', characters.at(0));
-            grid.set('selectedTile', stateManager.get('currentTurnCharacter').get('currentTile'));
+            this.stateManagerModel.set('currentTurnCharacter', characters.at(0));
+            grid.set('selectedTile', this.stateManagerModel.get('currentTurnCharacter').get('currentTile'));
             
             // start rendering engine
-            requestAnimationFrame(this.buildFrame);
+            window.requestAnimationFrame(this.buildFrame);
 		},
 		
 		events: {
@@ -75,8 +94,8 @@ define([
         onClick: function (event) {
             grid.set('selectedTile', grid.get('focusedTile'));
             if (pathfinder.isTileInPath(grid.get('selectedTile'))) {
-                pathfinder.selectPath(stateManager.get('currentTurnCharacter'));
-                stateManager.get('currentTurnCharacter').move();
+                pathfinder.selectPath(this.stateManagerModel.get('currentTurnCharacter'));
+                this.stateManagerModel.get('currentTurnCharacter').move();
             }
         },
         
@@ -86,13 +105,12 @@ define([
                 pathfinder.clearPath();
             }
             else if (focusedTile.isMoveable()) {
-                //pathfinder.findRange(stateManager.get('currentTurnCharacter'));
-                pathfinder.findPath(focusedTile, stateManager.get('currentTurnCharacter'));
+                pathfinder.findPath(focusedTile, this.stateManagerModel.get('currentTurnCharacter'));
             }
         },
         
         onMouseMove: function (event) {
-            grid.set('focusedTile', grid.hitTest(event, battle.get('background')));
+            grid.set('focusedTile', grid.hitTest(event, this.background));
         },
         
         onMouseOut: function (event) {
@@ -102,7 +120,7 @@ define([
         },
         
         onTurnChange: function () {
-            this.characterMovementRange = pathfinder.findRange(stateManager.get('currentTurnCharacter'));
+            grid.set('selectedTile', this.stateManagerModel.get('currentTurnCharacter').get('currentTile'));
         },
         
         
@@ -169,11 +187,9 @@ define([
         },
         
         renderMovement: function (tiles, canvasCtx) {
-            //console.log('render movement tiles: ', tiles);
             if (tiles) {
                 canvasCtx.fillStyle = constants.grid.pathFillStyle;
                 for (var i in tiles) {
-                    //console.log('render tile: ', i);
                     grid.drawTile(tiles[i], canvasCtx, constants.grid.tileIndent);
                     canvasCtx.fill();
                 }
@@ -191,12 +207,12 @@ define([
         },
 
         render: function () {
-            battle.get('foregroundCtx').clearRect(0, 0, constants.canvas.width, constants.canvas.height);
-            this.renderSelectedTile(grid.get('selectedTile'), battle.get('foregroundCtx'));
-            this.renderMovement(this.characterMovementRange, battle.get('foregroundCtx'));
-            this.renderPaths([pathfinder.path, stateManager.get('currentTurnCharacter').get('path')], battle.get('foregroundCtx'));
-            this.renderFocusedTile(grid.get('focusedTile'), battle.get('foregroundCtx'));
-            this.renderCharacter(battle.get('foregroundCtx'));
+            this.foregroundCtx.clearRect(0, 0, constants.canvas.width, constants.canvas.height);
+            this.renderSelectedTile(grid.get('selectedTile'), this.foregroundCtx);
+            this.renderMovement(this.stateManagerModel.get('characterMovementRange'), this.foregroundCtx);
+            this.renderPaths([pathfinder.path, this.stateManagerModel.get('currentTurnCharacter').get('path')], this.foregroundCtx);
+            this.renderFocusedTile(grid.get('focusedTile'), this.foregroundCtx);
+            this.renderCharacter(this.foregroundCtx);
         },
 
         // TODO: Possbily refactor renderer into a standalone object
@@ -208,10 +224,10 @@ define([
             Battle.battleView.gameUtilitiesModel.time.set('gameTime', Battle.battleView.gameUtilitiesModel.time.get('gameTime') + Battle.battleView.gameUtilitiesModel.time.get('deltaFrameTime'));
             Battle.battleView.update(Battle.battleView.gameUtilitiesModel.time.get('deltaFrameTime'));
             Battle.battleView.render();
-            requestAnimationFrame(Battle.battleView.buildFrame);
+            window.requestAnimationFrame(Battle.battleView.buildFrame);
         }
         
 	});
     
-	return new BattleView();
+	return BattleView;
 });
