@@ -26,6 +26,13 @@ define(function() {
         stateManager: {
             characterMovementRange: {
                 empty: {}
+            },
+            turnAction: {
+                attack: 1,
+                endTurn: 2,
+                move: 3,
+                tactic: 4,
+                wait: 5
             }
         },
         

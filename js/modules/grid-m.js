@@ -4,7 +4,8 @@ define([
     'modules/tile'
 ], function(
     Backbone, 
-    constants,Tile
+    constants,
+    Tile
 ) {
     
 	var Grid = Backbone.Model.extend({

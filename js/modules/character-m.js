@@ -14,22 +14,23 @@ define([
         }
     });
     
-	var Character = Backbone.Model.extend({
+	var CharacterModel = Backbone.Model.extend({
 		defaults: {
             attributes: new Attributes(),
             currentTile: null,
             movementRange: 4,
             path: [],
-            //position: null,
-            sprite: {
-                x: 0,
-                y: 0,
-            },
             spritesheet: document.getElementById('spritesheet'),
+            spriteX: 0,
+            spriteY: 0,
             velocity: 200,
             x: null,
             y: null
 		},
+        
+        initialize: function () {
+            
+        },
         
 		updateAttribute: function(attribute, change) {
 			var currentAttribute = this.get('attributes').get(attribute);
@@ -128,21 +129,6 @@ define([
             this.set('y', this.get('currentTile').y + constants.grid.tileSize/2);
         } 
 	});
-    
-	var CharacterList = Backbone.Collection.extend({
-        
-		addCharacter: function (sprite) {
-			var character = new Character({
-                sprite: sprite
-			});
-			
-            character.on('change:currentTile', character.onCurrentTileChange);
-            
-			this.add(character);
-			return character;
-		}
-		
-	});
 	
-	return new CharacterList();
+	return CharacterModel;
 });

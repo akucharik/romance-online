@@ -1,16 +1,15 @@
 define([
-	'backbone',
-    'modules/character-m'
+	'backbone'
 ], function(
-    Backbone,
-    characters
+    Backbone
 ) {
     
 	var StateManager = Backbone.Model.extend({
 		defaults: {
             characterMovementRange: null,
-            characters: characters,
-            currentTurnCharacter: null
+            characters: null,
+            turnAction: null,
+            turnCharacter: null
 		}
         
 	});
