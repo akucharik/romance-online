@@ -1,19 +1,17 @@
 define([
 	'jquery',
 	'backbone',
-    'modules/constants',
-    'modules/pathfinder'
+    'modules/constants'
 ], function(
     $, 
     Backbone, 
-    constants,
-    pathfinder
+    constants
 ) {
 
 	var CharacterTurnView = Backbone.View.extend({
-		
-		initialize: function() {
-			
+        
+		initialize: function(options) {
+            this.pathfinder = options.pathfinder;
 		},
 		
 		render: function() {
@@ -52,7 +50,7 @@ define([
         
         onMove: function() {
             this.model.set('turnAction', constants.stateManager.turnAction.move);
-            this.model.set('characterMovementRange', pathfinder.findRange(this.model.get('turnCharacter')));
+            this.model.set('characterMovementRange', this.pathfinder.findRange(this.model.get('turnCharacter')));
         },
         
         onTactic: function() {

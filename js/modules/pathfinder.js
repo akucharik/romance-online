@@ -1,13 +1,11 @@
 define([
     'class',
     'modules/constants',
-    'modules/grid-m',
     'modules/tile',
     'modules/utilities/jsUtilities'
 ], function(
     Class, 
-    constants, 
-    grid, 
+    constants,
     Tile, 
     JsUtilities
 ) {
@@ -22,8 +20,9 @@ define([
     });
     
     var Pathfinder = Class.extend({
-        init: function () {
+        init: function (grid) {
             this.path = [],
+            this.grid = grid,
             this.tiles = grid.get('tiles');
         },
         
@@ -55,11 +54,11 @@ define([
                 this.addNeighbor(tile.gridX, north, neighbors);
             }
             // south
-            if (south < grid.get('tilesY')) {
+            if (south < this.grid.get('tilesY')) {
                 this.addNeighbor(tile.gridX, south, neighbors);
             }
             // east
-            if (east < grid.get('tilesX')) {
+            if (east < this.grid.get('tilesX')) {
                 this.addNeighbor(east, tile.gridY, neighbors);
             }
             // west
@@ -193,7 +192,7 @@ define([
                         nextTile.gridX--;
                     }
                 }
-                currentTile = grid.getTile(nextTile.gridX, nextTile.gridY);
+                currentTile = this.grid.getTile(nextTile.gridX, nextTile.gridY);
                 newPath.push(currentTile);
 
                 // end path
@@ -222,7 +221,7 @@ define([
             var distanceFunction = manhattanDistance;
             var nodes = {};
             var startTile = character.get('currentTile');
-            var tiles = grid.get('tiles');
+            var tiles = this.grid.get('tiles');
             
             var Node = Class.extend({
                 init: function (tile, parent) {
@@ -257,13 +256,13 @@ define([
                     }
                 }
                 // south
-                if (south < grid.get('tilesY')) {
+                if (south < this.grid.get('tilesY')) {
                     if (tiles[Tile.prototype.buildKey(node.x, south)].isMoveable()) {
                         neighbors.push(nodes[Node.prototype.buildKey(node.x, south)]);
                     }
                 }
                 // east
-                if (east < grid.get('tilesX')) {
+                if (east < this.grid.get('tilesX')) {
                     if (tiles[Tile.prototype.buildKey(east, node.y)].isMoveable()) {
                         neighbors.push(nodes[Node.prototype.buildKey(east, node.y)]);
                     }
@@ -303,7 +302,7 @@ define([
                 var currentNode;
                 // reference to a Node (that starts a path in question)
                 var count = 0;
-                var minPathValue = grid.get('tilesX') * grid.get('tilesY') * constants.tile.movementValue.tree;
+                var minPathValue = this.grid.get('tilesX') * this.grid.get('tilesY') * constants.tile.movementValue.tree;
                 
                 startPath.nodes.push(startNode);
                 unevaluated.push(startPath);
@@ -312,7 +311,7 @@ define([
                     var nodesLength = nodes.length;
                     var tiles = [];
                     for (var i = 0; i < nodesLength; i++) {
-                        tiles.push(grid.get('tiles')[grid.buildTileId(nodes[i].x, nodes[i].y)]);
+                        tiles.push(this.grid.get('tiles')[this.grid.buildTileId(nodes[i].x, nodes[i].y)]);
                     }
                     return tiles;
                 };
@@ -443,5 +442,5 @@ define([
         }
     });
     
-	return new Pathfinder();
+	return Pathfinder;
 });

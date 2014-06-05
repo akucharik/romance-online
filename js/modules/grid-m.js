@@ -104,5 +104,5 @@ define([
         
 	});
 	
-	return new Grid();
+	return Grid;
 });

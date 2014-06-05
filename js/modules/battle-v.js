@@ -16,8 +16,8 @@ define([
     CharacterModel,
     CharacterCollection, 
     constants, 
-    grid, 
-    pathfinder,
+    Grid, 
+    Pathfinder,
     StateManagerModel, 
     CharacterTurnView,
     GameUtilitiesModel, 
@@ -25,6 +25,7 @@ define([
 ) {
 
 	var BattleView = Backbone.View.extend({
+        
         // background
         background: null,
         $background: null,
@@ -37,6 +38,8 @@ define([
         
         // models
         gameUtilities: null,
+        grid: null,
+        pathfinder: null,
         stateManager:  null,
         
         // collections
@@ -54,7 +57,6 @@ define([
             this.backgroundCtx = this.background.getContext('2d');
             this.background.width = constants.canvas.width;
             this.background.height = constants.canvas.height;
-            this.renderGrid(this.backgroundCtx);
 
             // set up foreground
             this.foreground = document.querySelector('#foreground');
@@ -63,17 +65,21 @@ define([
             this.foreground.width = constants.canvas.width;
             this.foreground.height = constants.canvas.height;
 
+            // set up grid
+            this.grid = new Grid();
+            this.renderGrid(this.backgroundCtx);
+            
             // set up characters
             this.character1 = new CharacterModel({
                 spriteX: 205,
                 spriteY: 486
             });
-            this.character1.setStartPosition(grid.getTile(1, 1));
+            this.character1.setStartPosition(this.grid.getTile(1, 1));
             this.character2 = new CharacterModel({
                 spriteX: 313,
                 spriteY: 143
             });
-            this.character2.setStartPosition(grid.getTile(3, 2));
+            this.character2.setStartPosition(this.grid.getTile(3, 2));
             this.characters = new CharacterCollection([this.character1, this.character2], {model: CharacterModel});
             console.log(this.characters);
             
@@ -84,12 +90,14 @@ define([
                 turnCharacter: this.characters.at(0),
             });
             
-            grid.set('selectedTile', this.stateManager.get('turnCharacter').get('currentTile'));
+            this.pathfinder = new Pathfinder(this.grid);
+            this.grid.set('selectedTile', this.stateManager.get('turnCharacter').get('currentTile'));
             
             // set up views
             this.characterTurnView = new CharacterTurnView({
                 model: this.stateManager,
-                el: '#characterActionsMenu'
+                el: '#characterActionsMenu',
+                pathfinder: this.pathfinder
             });
             this.gameUtilitiesView = new GameUtilitiesView({ 
                 model: this.gameUtilities,
@@ -112,39 +120,39 @@ define([
 		},
         
         onClick: function (event) {
-            grid.set('selectedTile', grid.get('focusedTile'));
-            if (pathfinder.isTileInPath(grid.get('selectedTile'))) {
-                pathfinder.selectPath(this.stateManager.get('turnCharacter'));
+            this.grid.set('selectedTile', this.grid.get('focusedTile'));
+            if (this.pathfinder.isTileInPath(this.grid.get('selectedTile'))) {
+                this.pathfinder.selectPath(this.stateManager.get('turnCharacter'));
                 this.stateManager.get('turnCharacter').move();
             }
         },
         
         onFocusedTileChange: function () {
-            var focusedTile = grid.get('focusedTile');
+            var focusedTile = this.grid.get('focusedTile');
             if (!focusedTile) {
-                pathfinder.clearPath();
+                this.pathfinder.clearPath();
             }
             else if (focusedTile.isMoveable()) {
-                pathfinder.findPath(focusedTile, this.stateManager.get('turnCharacter'));
+                this.pathfinder.findPath(focusedTile, this.stateManager.get('turnCharacter'));
             }
         },
         
         onMouseMove: function (event) {
-            grid.set('focusedTile', grid.hitTest(event, this.background));
+            this.grid.set('focusedTile', this.grid.hitTest(event, this.background));
         },
         
         onMouseOut: function (event) {
             // remove mousemove triggered visuals when mouse is not over canvas
-            grid.set('focusedTile', null);
-            pathfinder.clearPath();
+            this.grid.set('focusedTile', null);
+            this.pathfinder.clearPath();
         },
         
-                onTurnChange: function () {
-            grid.set('selectedTile', this.stateManager.get('turnCharacter').get('currentTile'));
+        onTurnChange: function () {
+            this.grid.set('selectedTile', this.stateManager.get('turnCharacter').get('currentTile'));
         },
         
         onTurnActionChange: function () {
-            this.stopListening(grid, 'change:focusedTile');
+            this.stopListening(this.grid, 'change:focusedTile');
             
             switch (this.stateManager.get('turnAction')) {
                 case constants.stateManager.turnAction.attack:
@@ -154,7 +162,7 @@ define([
                     
                     break;
                 case constants.stateManager.turnAction.move:
-                    this.listenTo(grid, 'change:focusedTile', this.onFocusedTileChange);
+                    this.listenTo(this.grid, 'change:focusedTile', this.onFocusedTileChange);
                     break;
                 case constants.stateManager.turnAction.tactic:
                     
@@ -193,14 +201,14 @@ define([
                 }
             };
             
-            for (var i in grid.get('tiles')) {
-                grid.drawTile(grid.get('tiles')[i], canvasCtx, constants.grid.tileIndent);
-                canvasCtx.fillStyle = getFillStyle(grid.get('tiles')[i].type);
+            for (var i in this.grid.get('tiles')) {
+                this.grid.drawTile(this.grid.get('tiles')[i], canvasCtx, constants.grid.tileIndent);
+                canvasCtx.fillStyle = getFillStyle(this.grid.get('tiles')[i].type);
                 canvasCtx.fill();
                 
                 canvasCtx.fillStyle = 'rgba(0, 0, 0, 1.0)';
                 canvasCtx.font = "10px Arial";
-                canvasCtx.fillText(i, grid.get('tiles')[i].x + 6 , grid.get('tiles')[i].y + 15);
+                canvasCtx.fillText(i, this.grid.get('tiles')[i].x + 6 , this.grid.get('tiles')[i].y + 15);
             };
         },
         
@@ -210,7 +218,7 @@ define([
                 if (paths[iPath].length > 0) {
                     var path = paths[iPath];
                     for (var iTile = 0; iTile < path.length; iTile++) {
-                        grid.drawTile(path[iTile], canvasCtx, constants.grid.tileIndent);
+                        this.grid.drawTile(path[iTile], canvasCtx, constants.grid.tileIndent);
                         canvasCtx.fill();
                     };
                 }
@@ -221,7 +229,7 @@ define([
             if (tile !== null && tile !== undefined) {
                 canvasCtx.strokeStyle = constants.grid.focusedTileFillStyle;
                 canvasCtx.lineWidth = constants.grid.focusedTileBorderWidth;
-                grid.drawTile(tile, canvasCtx, constants.grid.focusedTileIndent);
+                this.grid.drawTile(tile, canvasCtx, constants.grid.focusedTileIndent);
                 canvasCtx.stroke();	
             }
         },
@@ -230,7 +238,7 @@ define([
             if (tiles) {
                 canvasCtx.fillStyle = constants.grid.pathFillStyle;
                 for (var i in tiles) {
-                    grid.drawTile(tiles[i], canvasCtx, constants.grid.tileIndent);
+                    this.grid.drawTile(tiles[i], canvasCtx, constants.grid.tileIndent);
                     canvasCtx.fill();
                 }
             }
@@ -241,17 +249,17 @@ define([
             //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined
             if (tile !== null && tile !== undefined) {
                 canvasCtx.fillStyle = constants.grid.selectedTileFillStyle;
-                grid.drawTile(tile, canvasCtx, constants.grid.tileIndent);
+                this.grid.drawTile(tile, canvasCtx, constants.grid.tileIndent);
                 canvasCtx.fill();
             }
         },
 
         render: function () {
             this.foregroundCtx.clearRect(0, 0, constants.canvas.width, constants.canvas.height);
-            this.renderSelectedTile(grid.get('selectedTile'), this.foregroundCtx);
+            this.renderSelectedTile(this.grid.get('selectedTile'), this.foregroundCtx);
             this.renderMovement(this.stateManager.get('characterMovementRange'), this.foregroundCtx);
-            this.renderPaths([pathfinder.path, this.stateManager.get('turnCharacter').get('path')], this.foregroundCtx);
-            this.renderFocusedTile(grid.get('focusedTile'), this.foregroundCtx);
+            this.renderPaths([this.pathfinder.path, this.stateManager.get('turnCharacter').get('path')], this.foregroundCtx);
+            this.renderFocusedTile(this.grid.get('focusedTile'), this.foregroundCtx);
             this.renderCharacter(this.foregroundCtx);
         },
 
