@@ -27,7 +27,7 @@ define([
 		},
 		
         clearMovementRange: function() {
-            this.model.set('characterMovementRange', constants.stateManager.characterMovementRange.empty)
+            this.model.set('characterMovementRange', {})
         },
         
         onAttack: function() {
@@ -50,7 +50,8 @@ define([
         
         onMove: function() {
             this.model.set('turnAction', constants.stateManager.turnAction.move);
-            this.model.set('characterMovementRange', this.pathfinder.findRange(this.model.get('turnCharacter')));
+            //this.model.set('characterMovementRange', this.pathfinder.findRange(this.model.get('turnCharacter')));
+            this.model.set('characterMovementRange', this.pathfinder.findPaths(this.model.get('turnCharacter')));
         },
         
         onTactic: function() {

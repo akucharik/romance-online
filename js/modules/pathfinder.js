@@ -164,6 +164,69 @@ define([
             return tilesInRange;
         },
         
+        findPaths: function (character) {
+            var maxDistance = character.get('movementRange'),
+                neighbors = [],
+                currentPath = {},
+                currentPathEndNode = null,
+                shortestPaths = {},
+                open = [],
+                closed = [],
+                tilesInRange = {}
+
+            // create initial paths
+            neighbors = this.getNeighbors(character.get('currentTile'))
+            for (var i = 0; i < neighbors.length; i++) {
+                var currentNeighbor = neighbors[i];
+                var newPath = new Path([currentNeighbor], currentNeighbor.movementValue);
+                open.push(newPath);
+            }
+            
+            // find paths
+            while (open.length > 0) {
+                currentPath = open.shift();
+                neighbors = this.getNeighbors(currentPath.tiles[currentPath.tiles.length - 1]);
+
+                // evaluate the neighbors
+                for (var i = 0; i < neighbors.length; i++) {
+                    var currentNeighbor = neighbors[i];
+                    
+                    // if the neighbor is a new node, keep evaluating the path
+                    if (!this.nodeAlreadyTraversed(currentNeighbor, currentPath)) {
+                        var newPath = new Path(currentPath.tiles.slice(), currentPath.value);
+                        newPath.tiles.push(currentNeighbor);
+                        newPath.value += currentNeighbor.movementValue;
+
+                        // evaluate what to do with the new expanded path
+                        if (newPath.value < maxDistance) {
+                            closed.push(newPath);
+                            open.push(newPath);
+                        }
+                        else if (newPath.value === maxDistance) {
+                            closed.push(newPath);
+                        }
+                    }
+                }
+            }
+            
+            while (closed.length > 0) {
+                var path = closed[0];
+                var shortestPath = null;
+                var sameEndNodePaths = this.removeSameEndNodePaths(closed, path.tiles[path.tiles.length - 1]);
+                sameEndNodePaths = jsUtilities.array.sortByKey(sameEndNodePaths, 'value');
+                shortestPath = sameEndNodePaths[0];
+                shortestPaths[Tile.prototype.buildKey(shortestPath.tiles[shortestPath.tiles.length - 1].gridX, shortestPath.tiles[shortestPath.tiles.length - 1].gridY)] = shortestPath;
+            }
+            
+            for (var i in shortestPaths) {
+                tilesInRange[i] = this.grid.get('tiles')[i];
+            }
+            
+            console.log('shortest paths: ', shortestPaths);
+            console.log('tiles in range: ', tilesInRange);
+            // return necessary info
+        },
+        
         findPath: function (endTile, character) {
             var currentTile = character.get('currentTile');
             var newPath = [];

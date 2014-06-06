@@ -119,11 +119,16 @@ define([
             'mouseout': 'onMouseOut'
 		},
         
+        clearMovementRange: function() {
+            this.stateManager.set('characterMovementRange', {})
+        },
+        
         onClick: function (event) {
             this.grid.set('selectedTile', this.grid.get('focusedTile'));
             if (this.pathfinder.isTileInPath(this.grid.get('selectedTile'))) {
                 this.pathfinder.selectPath(this.stateManager.get('turnCharacter'));
                 this.stateManager.get('turnCharacter').move();
+                this.clearMovementRange();
             }
         },
         
