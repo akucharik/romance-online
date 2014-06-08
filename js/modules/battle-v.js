@@ -81,7 +81,6 @@ define([
             });
             this.character2.setStartPosition(this.grid.getTile(3, 2));
             this.characters = new CharacterCollection([this.character1, this.character2], {model: CharacterModel});
-            console.log(this.characters);
             
             // set up models
             this.gameUtilities = new GameUtilitiesModel();
@@ -125,11 +124,16 @@ define([
         
         onClick: function (event) {
             this.grid.set('selectedTile', this.grid.get('focusedTile'));
-            if (this.pathfinder.isTileInPath(this.grid.get('selectedTile'))) {
-                this.pathfinder.selectPath(this.stateManager.get('turnCharacter'));
+            if (this.pathfinder.isTileInRange(this.grid.get('selectedTile'))) {
+                this.pathfinder.setPath(this.grid.get('selectedTile'), this.stateManager.get('turnCharacter'));
                 this.stateManager.get('turnCharacter').move();
                 this.clearMovementRange();
             }
+//            if (this.pathfinder.isTileInPath(this.grid.get('selectedTile'))) {
+//                this.pathfinder.selectPath(this.stateManager.get('turnCharacter'));
+//                this.stateManager.get('turnCharacter').move();
+//                this.clearMovementRange();
+//            }
         },
         
         onFocusedTileChange: function () {
@@ -218,13 +222,16 @@ define([
         },
         
         renderPaths: function (paths, canvasCtx) {
-            canvasCtx.fillStyle = constants.grid.pathFillStyle;
+            //canvasCtx.fillStyle = constants.grid.pathFillStyle;
+            canvasCtx.strokeStyle = constants.grid.focusedTileFillStyle;
+            canvasCtx.lineWidth = constants.grid.focusedTileBorderWidth;
             for (var iPath = 0; iPath < paths.length; iPath++) {
                 if (paths[iPath].length > 0) {
                     var path = paths[iPath];
                     for (var iTile = 0; iTile < path.length; iTile++) {
-                        this.grid.drawTile(path[iTile], canvasCtx, constants.grid.tileIndent);
-                        canvasCtx.fill();
+                        this.grid.drawTile(path[iTile], canvasCtx, constants.grid.focusedTileIndent);
+                        //canvasCtx.fill();
+                        canvasCtx.stroke();
                     };
                 }
             };
@@ -235,7 +242,7 @@ define([
                 canvasCtx.strokeStyle = constants.grid.focusedTileFillStyle;
                 canvasCtx.lineWidth = constants.grid.focusedTileBorderWidth;
                 this.grid.drawTile(tile, canvasCtx, constants.grid.focusedTileIndent);
-                canvasCtx.stroke();	
+                canvasCtx.stroke();
             }
         },
         

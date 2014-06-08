@@ -106,7 +106,7 @@ define([
 
             // step to the first tile in the path
             if (this.get('path').length > 0) {
-                console.log('stepTo: ', this.get('path')[0]);
+                //console.log('stepTo: ', this.get('path')[0]);
                 self = this;
                 stepTimer = setInterval(function () {
                     stepTo(self.get('path')[0], self);

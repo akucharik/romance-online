@@ -12,10 +12,16 @@ define([
 
     var jsUtilities = new JsUtilities();
     
-    var Path = Class.extend({
-        init: function (tiles, value) {
-            this.tiles = tiles || [],
-            this.value = value || 0
+    var Node = Class.extend({
+        init: function (options) {
+            options = options || {};
+            
+            this.cost = options.movementValue,
+            this.id = options.id,
+            this.path = [],
+            this.pathCost = 0,
+            this.x = options.gridX,
+            this.y = options.gridY
         }
     });
     
@@ -23,7 +29,15 @@ define([
         init: function (grid) {
             this.path = [],
             this.grid = grid,
-            this.tiles = grid.get('tiles');
+            this.tiles = grid.get('tiles'),
+            this.tilesInRange = {},
+            this.nodes = this.getNodesFromTiles(grid.get('tiles')),
+            this.nodesInRange = {};
+        },
+        
+        reset: function () {
+            this.nodesInRange = {};
+            this.tilesInRange = {};
         },
         
         clearPath: function () {
@@ -32,200 +46,142 @@ define([
             }
         },
         
-        addNeighbor: function (x, y, neighbors) {
-            if (this.isMoveable(x, y)) {
-                neighbors.push(this.tiles[Tile.prototype.buildKey(x, y)]);
+        getNodesFromTiles: function (tiles) {
+            var nodes = {};
+            for (var i in tiles) {
+                var node = new Node(tiles[i]);
+                nodes[node.id] = node;
             }
+            return nodes;
         },
-
+        
+        nodesToTiles: function (nodes) {
+            var tiles = {};
+            for (var i in nodes) {
+                tiles[i] = this.grid.get('tiles')[i];
+            }
+            return tiles;
+        },
+        
+        nodePathToTilePath: function (nodePath) {
+            var tilePath = [];
+            for (var i = 0; i < nodePath.length; i++) {
+                tilePath.push(this.grid.get('tiles')[nodePath[i].id]);
+            }
+            return tilePath;
+        },
+        
         isMoveable: function (x, y) {
             return this.tiles[Tile.prototype.buildKey(x, y)].isMoveable()
         },
         
-        getNeighbors: function (tile) {
-            var north = tile.gridY - 1,
-                south = tile.gridY + 1,
-                east = tile.gridX + 1,
-                west = tile.gridX - 1,
+        addNeighborNode: function (x, y, neighbors) {
+            //if (this.isMoveable(x, y)) {
+                neighbors.push(this.nodes[Tile.prototype.buildKey(x, y)]);
+            //}
+        },
+        
+        getNeighborNodes: function (node) {
+            var north = node.y - 1,
+                south = node.y + 1,
+                east = node.x + 1,
+                west = node.x - 1,
                 neighbors = [];
 
             // north
             if (north >= 0) {
-                this.addNeighbor(tile.gridX, north, neighbors);
+                this.addNeighborNode(node.x, north, neighbors);
             }
             // south
-            if (south < this.grid.get('tilesY')) {
-                this.addNeighbor(tile.gridX, south, neighbors);
+            if (south < this.grid.get('height')) {
+                this.addNeighborNode(node.x, south, neighbors);
             }
             // east
-            if (east < this.grid.get('tilesX')) {
-                this.addNeighbor(east, tile.gridY, neighbors);
+            if (east < this.grid.get('width')) {
+                this.addNeighborNode(east, node.y, neighbors);
             }
             // west
             if (west >= 0) {
-                this.addNeighbor(west, tile.gridY, neighbors);
+                this.addNeighborNode(west, node.y, neighbors);
             }
 
             return neighbors;
         },
-
-        nodeAlreadyTraversed: function (node, path) {
-            return path.tiles.some(function (element, index, array) {
-                return (node.id === element.id);
-            });
-        },
-
-        removeSameEndNodePaths: function (array, node) {
-            var newArray = [];
-            array.forEach(function (element, index, array) {
-                if (node.id === element.tiles[element.tiles.length - 1].id) {
-                    newArray.push(array.splice(index, 1)[0]);
-                }
-            });
-            return newArray;
-        },
         
-        findRange: function (character) {
-            var maxDistance = character.get('movementRange'),
-                startTile = character.get('currentTile'),
-                open = [],
-                closed = [],
-                startPath = new Path([startTile]),
-                currentPath = {},
-                neighbors = [],
-                tilesInRange = {
-                    add: function (tile) {
-                        tilesInRange[tile.id] = tile;
-                    }
-                };
-
-            open.push(startPath);
-
-            // iterate through the open list until none are left
-            while (open.length > 0) {
-
-                // pick the first path in the list
-                // this is important to the way the algorithm eliminates duplicate paths
-                var currentPath = open.shift();
-                var currentPathEndNode = currentPath.tiles[currentPath.tiles.length - 1];
-                var neighbors = this.getNeighbors(currentPathEndNode);
-
-                // evaluate the neighbors
-                for (var i = 0; i < neighbors.length; i++) {
-                    var currentNeighbor = neighbors[i];
-                    var newPath = new Path(currentPath.tiles.slice(), currentPath.value);
-
-                    // if the neighbor is a previous node in the path, stop    
-                    if (this.nodeAlreadyTraversed(currentNeighbor, currentPath)) {
-                        closed.push(newPath);
-                    }
-
-                    // if the neighbor is a new node, keep evaluating the path
-                    else {
-                        newPath.tiles.push(currentNeighbor);
-                        newPath.value += currentNeighbor.movementValue;
-
-                        // evaluate what to do with the new expanded path
-                        if (newPath.value > maxDistance) {
-                            closed.push(newPath);
-                            tilesInRange.add(currentPathEndNode);
-                        }
-                        else if (newPath.value === maxDistance) {
-                            closed.push(newPath);
-                            tilesInRange.add(newPath.tiles[newPath.tiles.length - 1]);
-                        }
-                        else {
-                            // eliminate duplicate paths
-                            if (open.length > 0) {
-                                // remove paths with the same end node from the queue
-                                var sameEndNodePaths = this.removeSameEndNodePaths(open, currentNeighbor);
-
-                                if (sameEndNodePaths.length > 0) {
-                                    sameEndNodePaths.push(newPath);
-
-                                    // get the path with the smallest value
-                                    sameEndNodePaths = jsUtilities.array.sortByKey(sameEndNodePaths, 'value');
-                                    newPath = sameEndNodePaths.splice(0, 1)[0];
-
-                                    // stop evaluating duplicate paths
-                                    sameEndNodePaths.forEach(function (element, index, array) {
-                                        closed.push(element);
-                                        tilesInRange.add(element.tiles[element.tiles.length - 1]);
-                                    });
-                                }
-                            }
-                            open.push(newPath);
-                            tilesInRange.add(newPath.tiles[newPath.tiles.length - 1]);
-                        }
-                    }
-                }
-            }
-
-            return tilesInRange;
-        },
-        
-        findPaths: function (character) {
-            var maxDistance = character.get('movementRange'),
-                neighbors = [],
-                currentPath = {},
-                currentPathEndNode = null,
-                shortestPaths = {},
-                open = [],
-                closed = [],
-                tilesInRange = {}
-
-            // create initial paths
-            neighbors = this.getNeighbors(character.get('currentTile'))
+        visitNode: function (node, data) {
+            //console.log('node: ', node);
+            var neighbors = this.getNeighborNodes(node);
+            
             for (var i = 0; i < neighbors.length; i++) {
                 var currentNeighbor = neighbors[i];
-                var newPath = new Path([currentNeighbor], currentNeighbor.movementValue);
-                open.push(newPath);
-            }
-            
-            // find paths
-            while (open.length > 0) {
-                currentPath = open.shift();
-                neighbors = this.getNeighbors(currentPath.tiles[currentPath.tiles.length - 1]);
+                //console.log('current neighbor: ', currentNeighbor);
+                // visit a new node
+                if (!data.nodes[currentNeighbor.id]) {
+                    var newNode = _.clone(currentNeighbor);
 
-                // evaluate the neighbors
-                for (var i = 0; i < neighbors.length; i++) {
-                    var currentNeighbor = neighbors[i];
+                    newNode.path = node.path.slice();
+                    newNode.path.push(currentNeighbor);
+                    newNode.pathCost = node.pathCost;
+                    newNode.pathCost += currentNeighbor.cost;
                     
-                    // if the neighbor is a new node, keep evaluating the path
-                    if (!this.nodeAlreadyTraversed(currentNeighbor, currentPath)) {
-                        var newPath = new Path(currentPath.tiles.slice(), currentPath.value);
-                        newPath.tiles.push(currentNeighbor);
-                        newPath.value += currentNeighbor.movementValue;
-
-                        // evaluate what to do with the new expanded path
-                        if (newPath.value < maxDistance) {
-                            closed.push(newPath);
-                            open.push(newPath);
-                        }
-                        else if (newPath.value === maxDistance) {
-                            closed.push(newPath);
-                        }
+                    if (newNode.pathCost <= data.maxPathCost) {
+                        data.nodes[newNode.id] = newNode;
+                    }
+                    if (newNode.pathCost < data.maxPathCost) {
+                        this.visitNode(newNode, data);
+                    }
+                }
+                // visit an already visited node and assess
+                else {
+                    if ((node.pathCost + currentNeighbor.cost) < data.nodes[currentNeighbor.id].pathCost) {
+                        data.nodes[currentNeighbor.id].pathCost = node.pathCost + currentNeighbor.cost;
+                        data.nodes[currentNeighbor.id].path = node.path.slice();
+                        data.nodes[currentNeighbor.id].path.push(currentNeighbor);
+                        this.visitNode(data.nodes[currentNeighbor.id], data);
                     }
                 }
             }
-            
-            while (closed.length > 0) {
-                var path = closed[0];
-                var shortestPath = null;
-                var sameEndNodePaths = this.removeSameEndNodePaths(closed, path.tiles[path.tiles.length - 1]);
-                sameEndNodePaths = jsUtilities.array.sortByKey(sameEndNodePaths, 'value');
-                shortestPath = sameEndNodePaths[0];
-                shortestPaths[Tile.prototype.buildKey(shortestPath.tiles[shortestPath.tiles.length - 1].gridX, shortestPath.tiles[shortestPath.tiles.length - 1].gridY)] = shortestPath;
-            }
-            
-            for (var i in shortestPaths) {
-                tilesInRange[i] = this.grid.get('tiles')[i];
-            }
-            
-            console.log('shortest paths: ', shortestPaths);
-            console.log('tiles in range: ', tilesInRange);
-            // return necessary info
+            return data.nodes;
         },
+        
+        findPaths2: function (character) {
+            var startNode = _.clone(this.nodes[character.get('currentTile').id]),
+                data = {},
+                result = {}
+            
+            this.reset();
+            console.log('nodes: ', this.nodes);
+            console.log('start node: ', startNode);
+            data = { 
+                maxPathCost: character.get('movementRange'), 
+                nodes: {}
+            };
+            data.nodes[startNode.id] = startNode;
+            
+            this.nodesInRange = this.visitNode(startNode, data);
+            this.tilesInRange = this.nodesToTiles(this.nodesInRange);
+            
+            return this.tilesInRange;
+        },
+        
+        isTileInRange: function (tile) {
+            for (var i in this.tilesInRange) {
+                if (i === tile.id) {
+                    return true;
+                }
+            };
+            return false;
+        },
+        
+        setPath: function (tile, character) {
+            character.set('path', this.nodePathToTilePath(this.nodesInRange[tile.id].path).slice());
+        },
+        
+        
+        
+        
+        
+        
         
         findPath: function (endTile, character) {
             var currentTile = character.get('currentTile');
@@ -271,223 +227,6 @@ define([
             else {
                 this.path = [];
             }
-        },
-        
-        newFindPath: function (endTile, character) {
-        
-            // distance functions
-            // linear movement - no diagonals - just cardinal directions (NSEW)
-            var manhattanDistance = function (point, endNode) {
-                return (Math.abs(point.x - endNode.x) + Math.abs(point.y - endNode.y)) * constants.tile.movementValue.base;
-            };
-            
-            var distanceFunction = manhattanDistance;
-            var nodes = {};
-            var startTile = character.get('currentTile');
-            var tiles = this.grid.get('tiles');
-            
-            var Node = Class.extend({
-                init: function (tile, parent) {
-                    this.estimatedCompletionValue = 0,
-                    this.evaluated = false,
-                    this.id = tile.id,
-                        this.parent = parent || null,
-                    this.x = tile.gridX,
-                    this.y = tile.gridY,
-                    this.movementValue = tile.movementValue,
-                    this.travelledValue = 0
-                },
-                
-                buildKey: function (x, y) {
-                    return x + '_' + y;
-                }
-            });
-            
-            
-            
-            var getNeighbors = function (node) {
-                var north = node.y - 1,
-                    south = node.y + 1,
-                    east = node.x + 1,
-                    west = node.x - 1;
-                var neighbors = [];
-
-                // north
-                if (north >= 0){
-                    if (tiles[Tile.prototype.buildKey(node.x, north)].isMoveable()) {
-                        neighbors.push(nodes[Node.prototype.buildKey(node.x, north)]);
-                    }
-                }
-                // south
-                if (south < this.grid.get('tilesY')) {
-                    if (tiles[Tile.prototype.buildKey(node.x, south)].isMoveable()) {
-                        neighbors.push(nodes[Node.prototype.buildKey(node.x, south)]);
-                    }
-                }
-                // east
-                if (east < this.grid.get('tilesX')) {
-                    if (tiles[Tile.prototype.buildKey(east, node.y)].isMoveable()) {
-                        neighbors.push(nodes[Node.prototype.buildKey(east, node.y)]);
-                    }
-                }
-                // west
-                if (west >= 0) {
-                    if (tiles[Tile.prototype.buildKey(west, node.y)].isMoveable()) {
-                        neighbors.push(nodes[Node.prototype.buildKey(west, node.y)]);
-                    }
-                }
-                
-                return neighbors;
-            };
-            
-            for (var i in tiles) {
-                nodes[i] = new Node(tiles[i]);
-            }
-            
-            //console.log('tiles: ', tiles);
-            //console.log('nodes: ', nodes);
-            //console.log('neighbors: ', getNeighbors(nodes['0_0']));
-            
-            var calculatePath = function () {
-                var	startNode = nodes[Node.prototype.buildKey(startTile.gridX, startTile.gridY)];
-                startNode.evaluated = true;
-                var endNode = nodes[Node.prototype.buildKey(endTile.gridX, endTile.gridY)];
-                var startPath = {
-                    nodes: [],
-                    value: 0,
-                    underestimate: 0
-                };
-
-                var unevaluated = [];
-                var evaluated = [];
-                var bestPath = [];
-                var neighbors;
-                var currentNode;
-                // reference to a Node (that starts a path in question)
-                var count = 0;
-                var minPathValue = this.grid.get('tilesX') * this.grid.get('tilesY') * constants.tile.movementValue.tree;
-                
-                startPath.nodes.push(startNode);
-                unevaluated.push(startPath);
-                
-                var translateToTiles = function (nodes) {
-                    var nodesLength = nodes.length;
-                    var tiles = [];
-                    for (var i = 0; i < nodesLength; i++) {
-                        tiles.push(this.grid.get('tiles')[this.grid.buildTileId(nodes[i].x, nodes[i].y)]);
-                    }
-                    return tiles;
-                };
-                
-                var sortByKey = function (array, key) {
-                    return array.sort(function(a, b) {
-                        var x = a[key];
-                        var y = b[key];
-                        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-                    });
-                }
-                
-                var sortByLength = function (array) {
-                    return array.sort(function(a, b) {
-                        var x = a.length;
-                        var y = b.length;
-                        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-                    });
-                }
-                
-                var nodeAlreadyTraversed = function (node, path) {
-                    return path.nodes.some(function (element, index, array) {
-                        return (node.id === element.id);
-                    });
-                };
-                
-                // iterate through the open list until none are left
-                while (count < 9001 && unevaluated.length > 0) {
-                    var currentPath = unevaluated.shift();
-                    //console.log('start path: ', startPath);
-                    //console.log('paths in queue: ', unevaluated);
-                    //console.log('currentPath: ', currentPath);
-                    if(currentPath.value > minPathValue) {
-                        evaluated.push(currentPath);
-                    }
-                    else {
-                        var currentPathEndNode = currentPath.nodes[currentPath.nodes.length - 1];
-                        // if end node of a path is the destination, this is a possible path
-                        if(currentPathEndNode.id === endNode.id) {
-                            if(currentPath.value < minPathValue) {
-                                minPathValue = currentPath.value;
-                                bestPath = {
-                                    nodes: currentPath.nodes.slice(),
-                                    value: currentPath.value
-                                }
-                            }
-                        }
-                        // look at the path's last node's neighbors
-                        else {
-                            var neighbors = getNeighbors(currentPathEndNode);
-                            var neighborsLength = neighbors.length;
-                            for (var i = 0; i < neighborsLength; i++) {
-                                var newPath = {
-                                    nodes: currentPath.nodes.slice(),
-                                    value: currentPath.value,
-                                    underestimate: currentPath.underestimate
-                                };
-                                // if the neighbor is a previous node in the path, stop    
-                                if (nodeAlreadyTraversed(neighbors[i], currentPath)) {
-                                    //console.log('already traversed');
-                                    evaluated.push(newPath);
-                                }
-                                
-                                // if the neighbor is a new node, keep evaluating the path
-                                else {
-                                    // for paths with the same end node, only keep the shortest path
-                                    newPath.nodes.push(neighbors[i]);
-                                    newPath.value += neighbors[i].movementValue;
-                                    newPath.underestimate = newPath.value + distanceFunction(neighbors[i], endNode);
-                                    newPath.length = newPath.nodes.length;
-//                                    if (unevaluated.length > 0) {
-//                                        // TODO: look into JavaScript filter
-//                                        // get all paths with the same end node
-//                                        var sameEndNodePaths = [];
-//                                        unevaluated.forEach(function (element, index, array) {
-//                                            if (neighbors[i].id === element.nodes[element.nodes.length - 1].id) {
-//                                                sameEndNodePaths.push(unevaluated.splice(index, 1)[0]);
-//                                            }
-//                                        });
-//                                        // add the path to the new array
-//                                        //console.log('same end node paths without current: ', sameEndNodePaths);
-//                                        sameEndNodePaths.push(newPath);
-//                                        //console.log('same end node paths with current: ', sameEndNodePaths);
-//                                        
-//                                        // sort the paths by their values, smallest first
-//                                        sortByKey(sameEndNodePaths, 'underestimate');
-//                                        //console.log('same end node paths with current, sorted: ', sameEndNodePaths);
-//                                        // look at all paths with the same smallest value and take the shortest one
-//                                        var smallestUnderestimate = sameEndNodePaths[0].underestimate;
-//                                        var sameUnderestimatePaths = [];
-//                                        sameEndNodePaths.forEach(function (element, index, array) {
-//                                            if (element.underestimate === smallestUnderestimate) {
-//                                                sameUnderestimatePaths.push(element); 
-//                                            }
-//                                        });
-//                                        // set as new path
-//                                        newPath = sortByLength(sameUnderestimatePaths)[0];
-//                                        //console.log('path with shortest length: ', newPath)
-//                                    }     
-                                    unevaluated.unshift(newPath);
-                                    sortByKey(unevaluated, 'underestimate');
-                                }
-                            }
-                        }
-                    }
-                    count++;
-                }
-                return {
-                    iterations: count,
-                    bestPath: bestPath
-                };
-            };
-            console.log(calculatePath());
         },
 
         isTileInPath: function (tile) {

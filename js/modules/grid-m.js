@@ -13,13 +13,13 @@ define([
             focusedTile: null,
             selectedTile: null,
             tiles: {},
-            tilesX: (constants.canvas.width - (constants.canvas.width % constants.grid.tileSize)) / constants.grid.tileSize,
-            tilesY: (constants.canvas.height - (constants.canvas.height % constants.grid.tileSize)) / constants.grid.tileSize
+            width: (constants.canvas.width - (constants.canvas.width % constants.grid.tileSize)) / constants.grid.tileSize,
+            height: (constants.canvas.height - (constants.canvas.height % constants.grid.tileSize)) / constants.grid.tileSize
 		},
         
         initialize: function () {
-            for (var y = 0; y < this.get('tilesY'); y++) {
-                for (var x = 0; x < this.get('tilesX'); x++) {
+            for (var y = 0; y < this.get('height'); y++) {
+                for (var x = 0; x < this.get('width'); x++) {
                     // TODO: temporarily create different tile types
                     var options = {
                         occupied: null,

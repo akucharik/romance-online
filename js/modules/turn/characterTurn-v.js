@@ -51,7 +51,7 @@ define([
         onMove: function() {
             this.model.set('turnAction', constants.stateManager.turnAction.move);
             //this.model.set('characterMovementRange', this.pathfinder.findRange(this.model.get('turnCharacter')));
-            this.model.set('characterMovementRange', this.pathfinder.findPaths(this.model.get('turnCharacter')));
+            this.model.set('characterMovementRange', this.pathfinder.findPaths2(this.model.get('turnCharacter')));
         },
         
         onTactic: function() {
