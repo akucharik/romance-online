@@ -49,6 +49,9 @@ define([
         characterTurnView: null,
         gameUtilitiesView: null,
         
+        // character
+        path: [],
+        
 		initialize: function() {
             
             // set up background
@@ -129,20 +132,15 @@ define([
                 this.stateManager.get('turnCharacter').move();
                 this.clearMovementRange();
             }
-//            if (this.pathfinder.isTileInPath(this.grid.get('selectedTile'))) {
-//                this.pathfinder.selectPath(this.stateManager.get('turnCharacter'));
-//                this.stateManager.get('turnCharacter').move();
-//                this.clearMovementRange();
-//            }
         },
         
         onFocusedTileChange: function () {
             var focusedTile = this.grid.get('focusedTile');
-            if (!focusedTile) {
-                this.pathfinder.clearPath();
+            if (!focusedTile || !this.pathfinder.isTileInRange(focusedTile)) {
+                this.path = [];
             }
             else if (focusedTile.isMoveable()) {
-                this.pathfinder.findPath(focusedTile, this.stateManager.get('turnCharacter'));
+                this.path = this.pathfinder.nodesInRange[focusedTile.id].path;
             }
         },
         
@@ -153,7 +151,7 @@ define([
         onMouseOut: function (event) {
             // remove mousemove triggered visuals when mouse is not over canvas
             this.grid.set('focusedTile', null);
-            this.pathfinder.clearPath();
+            this.path = [];
         },
         
         onTurnChange: function () {
@@ -201,9 +199,9 @@ define([
         renderGrid: function (canvasCtx) {
             var getFillStyle = function (type) {
                 switch (type) {
-                    case constants.tile.type.obstacle:
+                    case constants.tile.type.OBSTACLE:
                         return 'rgba(100, 100, 100, 1.0)';
-                    case constants.tile.type.tree:
+                    case constants.tile.type.TREE:
                         return 'rgba(50, 150, 50, 1.0)';
                     default:
                         return 'rgba(100, 200, 100, 1.0)';
@@ -270,7 +268,7 @@ define([
             this.foregroundCtx.clearRect(0, 0, constants.canvas.width, constants.canvas.height);
             this.renderSelectedTile(this.grid.get('selectedTile'), this.foregroundCtx);
             this.renderMovement(this.stateManager.get('characterMovementRange'), this.foregroundCtx);
-            this.renderPaths([this.pathfinder.path, this.stateManager.get('turnCharacter').get('path')], this.foregroundCtx);
+            this.renderPaths([this.path, this.stateManager.get('turnCharacter').get('path')], this.foregroundCtx);
             this.renderFocusedTile(this.grid.get('focusedTile'), this.foregroundCtx);
             this.renderCharacter(this.foregroundCtx);
         },

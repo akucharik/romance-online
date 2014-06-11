@@ -29,18 +29,17 @@ define([
                     this.get('tiles')[Tile.prototype.buildKey(x, y)] = newTile;
                 }
             }
-            this.setDistanceValues();
         },
         
         getTileType: function (tileX) {
             var x = tileX % (Math.random() * 10)
             switch (true) {
                 case x > 5:
-                    return constants.tile.type.obstacle;
+                    return constants.tile.type.OBSTACLE;
                 case x > 2 && x < 5:
-                    return constants.tile.type.tree;
+                    return constants.tile.type.TREE;
                 default:
-                    return constants.tile.type.base;
+                    return constants.tile.type.BASE;
             }
         },
         
@@ -80,18 +79,6 @@ define([
             //else {
             //	return null;	
             //}
-        },
-        
-        setDistanceValues: function () {
-            var tiles = this.get('tiles');
-            for (var i in tiles) {
-                var distanceValues = {};
-                for (var j in tiles) {
-                    var distanceValue = Math.abs(tiles[i].gridX - tiles[j].gridX) + Math.abs(tiles[i].gridY - tiles[j].gridY);
-                    distanceValues[j] = distanceValue;
-                }
-                tiles[i].distanceValues = distanceValues;
-            }
         },
         
         drawTile: function (tile, canvasCtx, indentValue) {

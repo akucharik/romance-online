@@ -34,14 +34,15 @@ define(function() {
         },
         
         tile: {
-            movementValue: {
-                base: 1,
-                tree: 3
+            cost: {
+                BASE: 1,
+                OBSTACLE: 100,
+                TREE: 3
             },
             type: {
-                base: 1,
-                obstacle: 2,
-                tree: 3
+                BASE: 1,
+                OBSTACLE: 2,
+                TREE: 3
             }
         }
         
