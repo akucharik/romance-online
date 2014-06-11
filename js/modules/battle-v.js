@@ -220,15 +220,18 @@ define([
         },
         
         renderPaths: function (paths, canvasCtx) {
-            //canvasCtx.fillStyle = constants.grid.pathFillStyle;
-            canvasCtx.strokeStyle = constants.grid.focusedTileFillStyle;
-            canvasCtx.lineWidth = constants.grid.focusedTileBorderWidth;
             for (var iPath = 0; iPath < paths.length; iPath++) {
                 if (paths[iPath].length > 0) {
                     var path = paths[iPath];
                     for (var iTile = 0; iTile < path.length; iTile++) {
-                        this.grid.drawTile(path[iTile], canvasCtx, constants.grid.focusedTileIndent);
-                        //canvasCtx.fill();
+                        canvasCtx.strokeStyle = constants.grid.PATH_BORDER_FILL_STYLE;
+                        canvasCtx.lineWidth = constants.grid.PATH_BORDER_WIDTH;
+                        this.grid.drawTile(path[iTile], canvasCtx, constants.grid.PATH_INDENT);
+                        canvasCtx.stroke();
+                        
+                        canvasCtx.strokeStyle = constants.grid.PATH_OUTER_BORDER_FILL_STYLE;
+                        canvasCtx.lineWidth = constants.grid.PATH_OUTER_BORDER_WIDTH;
+                        this.grid.drawTile(path[iTile], canvasCtx, constants.grid.PATH_OUTER_BORDER_INDENT);
                         canvasCtx.stroke();
                     };
                 }
@@ -237,19 +240,30 @@ define([
 
         renderFocusedTile: function (tile, canvasCtx) {
             if (tile !== null && tile !== undefined) {
-                canvasCtx.strokeStyle = constants.grid.focusedTileFillStyle;
-                canvasCtx.lineWidth = constants.grid.focusedTileBorderWidth;
-                this.grid.drawTile(tile, canvasCtx, constants.grid.focusedTileIndent);
+                canvasCtx.strokeStyle = constants.grid.FOCUSED_BORDER_FILL_STYLE;
+                canvasCtx.lineWidth = constants.grid.FOCUSED_BORDER_WIDTH;
+                this.grid.drawTile(tile, canvasCtx, constants.grid.FOCUSED_INDENT);
+                canvasCtx.stroke();
+                
+                canvasCtx.strokeStyle = constants.grid.FOCUSED_OUTER_BORDER_FILL_STYLE;
+                canvasCtx.lineWidth = constants.grid.FOCUSED_OUTER_BORDER_WIDTH;
+                this.grid.drawTile(tile, canvasCtx, constants.grid.FOCUSED_OUTER_BORDER_INDENT);
                 canvasCtx.stroke();
             }
         },
         
         renderMovement: function (tiles, canvasCtx) {
             if (tiles) {
-                canvasCtx.fillStyle = constants.grid.pathFillStyle;
                 for (var i in tiles) {
-                    this.grid.drawTile(tiles[i], canvasCtx, constants.grid.tileIndent);
-                    canvasCtx.fill();
+                    canvasCtx.strokeStyle = constants.grid.RANGE_BORDER_FILL_STYLE;
+                    canvasCtx.lineWidth = constants.grid.RANGE_BORDER_WIDTH;
+                    this.grid.drawTile(tiles[i], canvasCtx, constants.grid.RANGE_INDENT);
+                    canvasCtx.stroke();
+                    
+                    canvasCtx.strokeStyle = constants.grid.RANGE_OUTER_BORDER_FILL_STYLE;
+                    canvasCtx.lineWidth = constants.grid.RANGE_OUTER_BORDER_WIDTH;
+                    this.grid.drawTile(tiles[i], canvasCtx, constants.grid.RANGE_OUTER_BORDER_INDENT);
+                    canvasCtx.stroke();
                 }
             }
         },
@@ -258,9 +272,12 @@ define([
             //TODO: research if should use "!== undefined" or "typeof x !== 'undefined'"
             //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined
             if (tile !== null && tile !== undefined) {
-                canvasCtx.fillStyle = constants.grid.selectedTileFillStyle;
-                this.grid.drawTile(tile, canvasCtx, constants.grid.tileIndent);
+                canvasCtx.fillStyle = constants.grid.SELECTED_FILL_STYLE;
+                canvasCtx.strokeStyle = constants.grid.SELECTED_BORDER_FILL_STYLE;
+                canvasCtx.lineWidth = constants.grid.SELECTED_BORDER_WIDTH;
+                this.grid.drawTile(tile, canvasCtx, constants.grid.SELECTED_INDENT);
                 canvasCtx.fill();
+                canvasCtx.stroke();
             }
         },
 
