@@ -79,7 +79,8 @@ define([
                 }
                 // visit an already visited node and assess
                 else {
-                    if ((node.pathCost + currentNeighbor.cost) < data.nodes[currentNeighbor.id].pathCost) {
+                    if (node.pathCost + currentNeighbor.cost <= data.nodes[currentNeighbor.id].pathCost &&
+                        node.path.length < data.nodes[currentNeighbor.id].path.length) {
                         data.nodes[currentNeighbor.id].pathCost = node.pathCost + currentNeighbor.cost;
                         data.nodes[currentNeighbor.id].path = node.path.slice();
                         data.nodes[currentNeighbor.id].path.push(currentNeighbor);
