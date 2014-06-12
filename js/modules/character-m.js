@@ -18,6 +18,7 @@ define([
 		defaults: {
             attributes: new Attributes(),
             currentTile: null,
+            maxMovementRange: 4,
             movementRange: 4,
             path: [],
             spritesheet: document.getElementById('spritesheet'),
@@ -36,7 +37,7 @@ define([
 			var currentAttribute = this.get('attributes').get(attribute);
             var currentAvailable = this.get('attributes').get('available');
             
-            if (currentAttribute < constants.character.attributeMax && currentAttribute > 0 && currentAvailable > 0) {
+            if (currentAttribute < constants.character.ATTRIBUTE_MAX && currentAttribute > 0 && currentAvailable > 0) {
                 this.get('attributes').set(attribute, currentAttribute + change);
                 this.get('attributes').set('available', currentAvailable + (change * -1));
             }
@@ -50,8 +51,8 @@ define([
 
             var stepTo = function (tile, context) {
 
-                var targetX = tile.x + constants.grid.tileSize/2;
-                var targetY = tile.y + constants.grid.tileSize/2;
+                var targetX = tile.x + constants.grid.TILE_SIZE/2;
+                var targetY = tile.y + constants.grid.TILE_SIZE/2;
                 var increment = 6;
                 var x = context.get('x');
                 var y = context.get('y');
@@ -125,8 +126,8 @@ define([
         
         setStartPosition: function (tile) {
             this.set('currentTile', tile);
-            this.set('x', this.get('currentTile').x + constants.grid.tileSize/2);
-            this.set('y', this.get('currentTile').y + constants.grid.tileSize/2);
+            this.set('x', this.get('currentTile').x + constants.grid.TILE_SIZE/2);
+            this.set('y', this.get('currentTile').y + constants.grid.TILE_SIZE/2);
         } 
 	});
 	

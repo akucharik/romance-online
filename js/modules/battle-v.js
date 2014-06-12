@@ -58,15 +58,15 @@ define([
             this.background = document.querySelector('#background');
             this.$background = $(this.background);
             this.backgroundCtx = this.background.getContext('2d');
-            this.background.width = constants.canvas.width;
-            this.background.height = constants.canvas.height;
+            this.background.width = constants.canvas.WIDTH;
+            this.background.height = constants.canvas.HEIGHT;
 
             // set up foreground
             this.foreground = document.querySelector('#foreground');
             this.$foreground = $(this.foreground);
             this.foregroundCtx = this.foreground.getContext('2d');
-            this.foreground.width = constants.canvas.width;
-            this.foreground.height = constants.canvas.height;
+            this.foreground.width = constants.canvas.WIDTH;
+            this.foreground.height = constants.canvas.HEIGHT;
 
             // set up grid
             this.grid = new Grid();
@@ -162,19 +162,19 @@ define([
             this.stopListening(this.grid, 'change:focusedTile');
             
             switch (this.stateManager.get('turnAction')) {
-                case constants.stateManager.turnAction.attack:
+                case constants.stateManager.turnAction.ATTACK:
                     
                     break;
-                case constants.stateManager.turnAction.endTurn:
+                case constants.stateManager.turnAction.END_TURN:
                     
                     break;
-                case constants.stateManager.turnAction.move:
+                case constants.stateManager.turnAction.MOVE:
                     this.listenTo(this.grid, 'change:focusedTile', this.onFocusedTileChange);
                     break;
-                case constants.stateManager.turnAction.tactic:
+                case constants.stateManager.turnAction.TACTIC:
                     
                     break;
-                case constants.stateManager.turnAction.wait:
+                case constants.stateManager.turnAction.WAIT:
                     
                     break;
             }
@@ -209,7 +209,7 @@ define([
             };
             
             for (var i in this.grid.get('tiles')) {
-                this.grid.drawTile(this.grid.get('tiles')[i], canvasCtx, constants.grid.tileIndent);
+                this.grid.drawTile(this.grid.get('tiles')[i], canvasCtx);
                 canvasCtx.fillStyle = getFillStyle(this.grid.get('tiles')[i].type);
                 canvasCtx.fill();
                 
@@ -282,7 +282,7 @@ define([
         },
 
         render: function () {
-            this.foregroundCtx.clearRect(0, 0, constants.canvas.width, constants.canvas.height);
+            this.foregroundCtx.clearRect(0, 0, constants.canvas.WIDTH, constants.canvas.HEIGHT);
             this.renderSelectedTile(this.grid.get('selectedTile'), this.foregroundCtx);
             this.renderMovement(this.stateManager.get('characterMovementRange'), this.foregroundCtx);
             this.renderPaths([this.path, this.stateManager.get('turnCharacter').get('path')], this.foregroundCtx);

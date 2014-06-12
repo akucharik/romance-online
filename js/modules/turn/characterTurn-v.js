@@ -31,12 +31,12 @@ define([
         },
         
         onAttack: function() {
-            this.model.set('turnAction', constants.stateManager.turnAction.attack);
+            this.model.set('turnAction', constants.stateManager.turnAction.ATTACK);
             this.clearMovementRange();
         },
         
 		onEndTurn: function() {
-            this.model.set('turnAction', constants.stateManager.turnAction.endTurn);
+            this.model.set('turnAction', constants.stateManager.turnAction.END_TURN);
 			this.clearMovementRange();
             
             if(this.model.get('characters').indexOf(this.model.get('turnCharacter')) < this.model.get('characters').length - 1) {
@@ -49,18 +49,17 @@ define([
 		},
         
         onMove: function() {
-            this.model.set('turnAction', constants.stateManager.turnAction.move);
-            //this.model.set('characterMovementRange', this.pathfinder.findRange(this.model.get('turnCharacter')));
-            this.model.set('characterMovementRange', this.pathfinder.findPaths2(this.model.get('turnCharacter')));
+            this.model.set('turnAction', constants.stateManager.turnAction.MOVE);
+            this.model.set('characterMovementRange', this.pathfinder.findPaths(this.model.get('turnCharacter')));
         },
         
         onTactic: function() {
-            this.model.set('turnAction', constants.stateManager.turnAction.tactic);
+            this.model.set('turnAction', constants.stateManager.turnAction.TACTIC);
             this.clearMovementRange();
         },
         
         onWait: function() {
-            this.model.set('turnAction', constants.stateManager.turnAction.wait);
+            this.model.set('turnAction', constants.stateManager.turnAction.WAIT);
             this.clearMovementRange();
         }
         

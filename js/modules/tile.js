@@ -16,8 +16,8 @@ define([
             this.id = this.buildKey(gridX, gridY);
             this.occupied = options.occupied || null;
             this.type = options.type || null;
-            this.x = gridX * constants.grid.tileSize;
-            this.y = gridY * constants.grid.tileSize;
+            this.x = gridX * constants.grid.TILE_SIZE;
+            this.y = gridY * constants.grid.TILE_SIZE;
             
             this.setCost();
         },

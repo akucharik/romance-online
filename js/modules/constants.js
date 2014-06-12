@@ -5,12 +5,12 @@ define(function() {
         canvas: {
 //            height: 720,
 //            width: 1080
-            height: 504,
-            width: 720
+            HEIGHT: 504,
+            WIDTH: 720
         },
         
         character: {
-            attributeMax: 100
+            ATTRIBUTE_MAX: 100
         },
         
         grid: {
@@ -40,17 +40,16 @@ define(function() {
             SELECTED_FILL_STYLE: 'rgba(255, 255, 50, 0.5)',
             SELECTED_INDENT: 3,
             
-            tileIndent: 0,
-            tileSize: 72
+            TILE_SIZE: 72
         },
         
         stateManager: {
             turnAction: {
-                attack: 1,
-                endTurn: 2,
-                move: 3,
-                tactic: 4,
-                wait: 5
+                ATTACK: 1,
+                END_TURN: 2,
+                MOVE: 3,
+                TACTIC: 4,
+                WAIT: 5
             }
         },
         

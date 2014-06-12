@@ -13,8 +13,8 @@ define([
             focusedTile: null,
             selectedTile: null,
             tiles: {},
-            width: (constants.canvas.width - (constants.canvas.width % constants.grid.tileSize)) / constants.grid.tileSize,
-            height: (constants.canvas.height - (constants.canvas.height % constants.grid.tileSize)) / constants.grid.tileSize
+            width: (constants.canvas.WIDTH - (constants.canvas.WIDTH % constants.grid.TILE_SIZE)) / constants.grid.TILE_SIZE,
+            height: (constants.canvas.HEIGHT - (constants.canvas.HEIGHT % constants.grid.TILE_SIZE)) / constants.grid.TILE_SIZE
 		},
         
         initialize: function () {
@@ -64,10 +64,10 @@ define([
             
             // handle sub-pixel centering of game if it happens
             backgroundX = (backgroundX < 0) ? 0 : backgroundX;
-            backgroundX = (backgroundX > constants.canvas.width) ? constants.canvas.width : backgroundX;
+            backgroundX = (backgroundX > constants.canvas.WIDTH) ? constants.canvas.WIDTH : backgroundX;
             
-            var x = Math.floor(backgroundX / constants.grid.tileSize);
-            var y = Math.floor(backgroundY / constants.grid.tileSize);
+            var x = Math.floor(backgroundX / constants.grid.TILE_SIZE);
+            var y = Math.floor(backgroundY / constants.grid.TILE_SIZE);
 
             return this.getTile(x, y);
 
@@ -85,7 +85,7 @@ define([
             if (tile !== undefined && tile !== null) {
                 var indent = (indentValue === undefined ? 0 : indentValue);
                 canvasCtx.beginPath();
-                canvasCtx.rect(tile.x + indent/2, tile.y + indent/2, constants.grid.tileSize - indent, constants.grid.tileSize - indent);
+                canvasCtx.rect(tile.x + indent/2, tile.y + indent/2, constants.grid.TILE_SIZE - indent, constants.grid.TILE_SIZE - indent);
             }
         }
         

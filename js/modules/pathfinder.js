@@ -91,7 +91,7 @@ define([
             return data.nodes;
         },
         
-        findPaths2: function (character) {
+        findPaths: function (character) {
             var startNode = _.clone(character.get('currentTile')),
                 data = {},
                 result = {}
