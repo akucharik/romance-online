@@ -10,8 +10,6 @@ define([
     
 	var Grid = Backbone.Model.extend({
 		defaults: {
-            focusedTile: null,
-            selectedTile: null,
             tiles: {},
             width: (constants.canvas.WIDTH - (constants.canvas.WIDTH % constants.grid.TILE_SIZE)) / constants.grid.TILE_SIZE,
             height: (constants.canvas.HEIGHT - (constants.canvas.HEIGHT % constants.grid.TILE_SIZE)) / constants.grid.TILE_SIZE
@@ -56,37 +54,6 @@ define([
                 }
             }
             return occupiedTiles;
-        },
-        
-        hitTest: function (mouseObj, canvas) {		
-            var backgroundX = mouseObj.pageX - $(canvas).offset().left;
-            var backgroundY = mouseObj.pageY - $(canvas).offset().top;
-            
-            // handle sub-pixel centering of game if it happens
-            backgroundX = (backgroundX < 0) ? 0 : backgroundX;
-            backgroundX = (backgroundX > constants.canvas.WIDTH) ? constants.canvas.WIDTH : backgroundX;
-            
-            var x = Math.floor(backgroundX / constants.grid.TILE_SIZE);
-            var y = Math.floor(backgroundY / constants.grid.TILE_SIZE);
-
-            return this.getTile(x, y);
-
-            // TODO: only needed for non-square/rectangle tile shapes
-            //drawTile(tile, foregroundCtx)
-            //if(foregroundCtx.isPointInPath(backgroundX, backgroundY)) {
-            //	return tile;
-            //}
-            //else {
-            //	return null;	
-            //}
-        },
-        
-        drawTile: function (tile, canvasCtx, indentValue) {
-            if (tile !== undefined && tile !== null) {
-                var indent = (indentValue === undefined ? 0 : indentValue);
-                canvasCtx.beginPath();
-                canvasCtx.rect(tile.x + indent/2, tile.y + indent/2, constants.grid.TILE_SIZE - indent, constants.grid.TILE_SIZE - indent);
-            }
         }
         
 	});

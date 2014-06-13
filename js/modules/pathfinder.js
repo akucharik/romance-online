@@ -1,16 +1,10 @@
 define([
     'class',
-    'modules/constants',
-    'modules/tile',
-    'modules/utilities/jsUtilities'
+    'modules/tile'
 ], function(
-    Class, 
-    constants,
-    Tile, 
-    JsUtilities
+    Class,
+    Tile
 ) {
-
-    var jsUtilities = new JsUtilities();
     
     var Pathfinder = Class.extend({
         init: function (grid) {

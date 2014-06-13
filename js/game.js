@@ -1,8 +1,10 @@
 define([
 	'jquery',
+    'modules/battle-m',
     'modules/battle-v',
 ], function(
     $, 
+    BattleModel,
     BattleView
 ) {
     
@@ -12,7 +14,10 @@ define([
         window.Battle = {};
     }
     
+    var battle = new BattleModel();
+        
     Battle.battleView = new BattleView({
+        model: battle,
         el: '#foreground'
     });
     

@@ -6,10 +6,7 @@ define([
     
 	var StateManager = Backbone.Model.extend({
 		defaults: {
-            characterMovementRange: null,
-            characters: null,
-            turnAction: null,
-            turnCharacter: null
+            
 		}
         
 	});

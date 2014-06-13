@@ -43,8 +43,8 @@ define(function() {
             TILE_SIZE: 72
         },
         
-        stateManager: {
-            turnAction: {
+        characterTurn: {
+            primaryAction: {
                 ATTACK: 1,
                 END_TURN: 2,
                 MOVE: 3,
