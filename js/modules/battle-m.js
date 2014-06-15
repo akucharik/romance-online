@@ -8,19 +8,24 @@ define([
 		defaults: {
             // characters
             characters: null,
-            //charactersA: null,
-            //charactersB: null,
+            //charactersForceA: null,
+            //charactersForceB: null,
             
             // character turn
-            characterTurnPrimaryAction: null,
             characterTurnCharacter: null,
             characterTurnMovementRange: null,
             characterTurnPath: [],
+            characterTurnPrimaryAction: null,
             
             // tiles
             focusedTile: null,
             selectedTile: null
-		}
+		},
+        
+        resetCharacterTurn: function () {
+            this.set('characterTurnPrimaryAction', null);
+            this.set('characterTurnMovementRange', null);
+        }
         
 	});
 	

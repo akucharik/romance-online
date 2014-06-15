@@ -20,7 +20,6 @@ define([
             currentTile: null,
             maxMovementRange: 4,
             movementRange: 4,
-            path: [],
             spritesheet: document.getElementById('spritesheet'),
             spriteX: 0,
             spriteY: 0,
@@ -31,6 +30,10 @@ define([
         
         initialize: function () {
             
+        },
+        
+        reset: function () {
+            this.set('movementRange', this.get('maxMovementRange'));
         },
         
 		updateAttribute: function(attribute, change) {
@@ -45,12 +48,29 @@ define([
             return this.get('attributes').get(attribute);
 		},
         
-        move: function () {
-            var endTile = this.get('path').slice([this.get('path').length - 1])[0];
-            var stepTimer = null;
+        moveTo: function (node, callback) {
+            var endTile = node.path.slice(node.length - 1);
+            var path = _.clone(node.path);
+            this.followPath(path, node, callback);
+        },
+        
+        followPath: function (path, node, callback) {
+            if (path.length > 0) {
+                //console.log('stepTo: ', this.get('path')[0]);
+                var self = this;
+                var stepTimer = setInterval(function () {
+                    stepTo(path, node, self, callback);
+                }, 16);
+            }
+            else {
+                this.set('currentTile', node.path[node.path.length - 1]);
+                this.set('movementRange', this.get('movementRange') - node.pathCost);
+                callback();
+            }
+            
+            var stepTo = function (path, node, context, callback) {
 
-            var stepTo = function (tile, context) {
-
+                var tile = path[0];
                 var targetX = tile.x + constants.grid.TILE_SIZE/2;
                 var targetY = tile.y + constants.grid.TILE_SIZE/2;
                 var increment = 6;
@@ -95,24 +115,13 @@ define([
 
                 if (x === targetX && y === targetY) {
                     clearInterval(stepTimer);
-                    if (context.get('path').length === 1) {
-                        context.set('currentTile', endTile);
-                    }
-                    context.get('path').shift();
+                    path.shift();
                     // recursive: move to next tile in path
-                    context.move();
+                    context.followPath(path, node, callback);
                 }
 
             };
-
-            // step to the first tile in the path
-            if (this.get('path').length > 0) {
-                //console.log('stepTo: ', this.get('path')[0]);
-                self = this;
-                stepTimer = setInterval(function () {
-                    stepTo(self.get('path')[0], self);
-                }, 16);
-            }
+            
         },
         
         onCurrentTileChange: function () {

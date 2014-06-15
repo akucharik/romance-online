@@ -85,19 +85,14 @@ define([
 		},
 		
 		events: {
-			'click': 'onClick',
             'mousemove': 'onMouseMove',
             'mouseout': 'onMouseOut'
 		},
         
-        onClick: function (event) {
-            this.model.set('selectedTile', this.model.get('focusedTile'));
-            if (this.pathfinder.isTileInRange(this.model.get('selectedTile'))) {
-                this.pathfinder.setPath(this.model.get('selectedTile'), this.model.get('characterTurnCharacter'));
-                this.model.set('characterTurnPath', []);
-                this.model.get('characterTurnCharacter').move();
-                this.model.set('characterTurnMovementRange', {});
-            }
+        // TODO: refactor this so that the absolute battleView reference isn't necessary
+        onMoveComplete: function () {
+            Battle.battleView.model.set('characterTurnMovementRange', Battle.battleView.pathfinder.findPaths(Battle.battleView.model.get('characterTurnCharacter')));
+            Battle.battleView.model.set('selectedTile', Battle.battleView.model.get('characterTurnCharacter').get('currentTile'));
         },
         
         onFocusedTileChange: function () {
@@ -124,17 +119,28 @@ define([
             this.model.set('selectedTile', this.model.get('characterTurnCharacter').get('currentTile'));
         },
         
+        onCharacterTurnMoveClick: function () {
+            if (this.model.get('characterTurnCharacter').get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
+                this.model.set('selectedTile', null);
+                this.model.set('characterTurnPath', []);
+                this.model.get('characterTurnCharacter').moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').id] , this.onMoveComplete);
+            }
+        },
+        
         onCharacterTurnPrimaryActionChange: function () {
+            delete this.events.click;
+            this.delegateEvents();
             this.stopListening(this.model, 'change:focusedTile');
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    this.model.set('characterTurnMovementRange', {});
                     console.log('Attack');
+                    this.model.set('characterTurnMovementRange', {});
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
-                    this.model.set('characterTurnMovementRange', {});
-                    this.model.set('characterTurnPrimaryAction', null);
+                    console.log('End turn');
+                    this.model.get('characterTurnCharacter').reset();
+                    this.model.resetCharacterTurn();
                     if(this.model.get('characters').indexOf(this.model.get('characterTurnCharacter')) < this.model.get('characters').length - 1) {
                         this.model.set('characterTurnCharacter', this.model.get('characters').at(this.model.get('characters').indexOf(this.model.get('characterTurnCharacter')) + 1));
                     }
@@ -143,16 +149,19 @@ define([
                     }
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
+                    console.log('move');
+                    this.events['click'] = 'onCharacterTurnMoveClick';
+                    this.delegateEvents();
                     this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
                     this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characterTurnCharacter')));
                     break;
                 case constants.characterTurn.primaryAction.TACTIC:
-                    this.model.set('characterTurnMovementRange', {});
                     console.log('Tactic');
+                    this.model.set('characterTurnMovementRange', {});
                     break;
                 case constants.characterTurn.primaryAction.WAIT:
-                    this.model.set('characterTurnMovementRange', {});
                     console.log('Wait');
+                    this.model.set('characterTurnMovementRange', {});
                     break;
             }
         },

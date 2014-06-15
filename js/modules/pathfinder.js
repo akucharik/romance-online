@@ -111,10 +111,6 @@ define([
                 }
             };
             return false;
-        },
-        
-        setPath: function (tile, character) {
-            character.set('path', this.nodesInRange[tile.id].path.slice());
         }
 
     });
