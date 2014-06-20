@@ -1,83 +1,109 @@
 define([
-	'backbone'
+	'backbone',
+    'modules/constants'
 ], function(
-    Backbone
+    Backbone,
+    constants
 ) {
 
 	var CharacterView = Backbone.View.extend({
 		
-		initialize: function() {
+		initialize: function(options) {
+            this.parent = options.parent;
 			this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
 		},
         
-        move: function () {
-            var endTile = this.model.get('path').slice([this.model.get('path').length - 1])[0];
-            var stepTimer = null;
+        moveTo: function (node, callback) {
+            var endTile = node.path.slice(node.length - 1);
+            var path = _.clone(node.path);
+            this.followPath(path, node, callback);
+        },
+        
+        followPath: function (path, node, callback) {
+            if (path.length > 0) {
+                //console.log('stepTo: ', this.get('path')[0]);
+                var model = this.model;
+                var view = this;
+                var stepTimer = setInterval(function () {
+                    stepTo(path, node, model, view, callback);
+                }, 16);
+            }
+            else {
+                this.model.set('currentTile', node.path[node.path.length - 1]);
+                this.model.set('movementRange', this.model.get('movementRange') - node.pathCost);
+                callback();
+            }
+            
+            var stepTo = function (path, node, context, view, callback) {
 
-            var stepTo = function (tile, context) {
-
+                var tile = path[0];
                 var targetX = tile.x + constants.grid.TILE_SIZE/2;
                 var targetY = tile.y + constants.grid.TILE_SIZE/2;
                 var increment = 6;
-                var x = context.model.get('x');
-                var y = context.model.get('y');
+                var x = context.get('x');
+                var y = context.get('y');
 
                 // move left
                 if (x > targetX) {
                     increment = Math.abs(increment) * -1;
-                    context.model.set('x', x + increment);
+                    context.set('x', x + increment);
                     if (x <= targetX) {
-                        context.model.set('x', targetX);
+                        context.set('x', targetX);
                     }
                 }
 
                 // move right
                 if (x < targetX) {
                     increment = Math.abs(increment);
-                    context.model.set('x', x + increment);
+                    context.set('x', x + increment);
                     if (x >= targetX) {
-                        context.model.set('x', targetX);
+                        context.set('x', targetX);
                     }
                 }
 
                 // move up
                 if (y > targetY) {
                     increment = Math.abs(increment) * -1;
-                    context.model.set('y', y + increment);
+                    context.set('y', y + increment);
                     if (y <= targetY) {
-                        context.model.set('y', targetY);
+                        context.set('y', targetY);
                     }
                 }
 
                 // move down
                 if (y < targetY) {
                     increment = Math.abs(increment);
-                    context.model.set('y', y + increment);
+                    context.set('y', y + increment);
                     if (y >= targetY) {
-                        context.model.set('y', targetY);
+                        context.set('y', targetY);
                     }
                 }
 
                 if (x === targetX && y === targetY) {
                     clearInterval(stepTimer);
-                    if (context.model.get('path').length === 1) {
-                        context.model.set('currentTile', endTile);
-                    }
-                    context.model.get('path').shift();
+                    path.shift();
                     // recursive: move to next tile in path
-                    context.model.move();
+                    view.followPath(path, node, callback);
                 }
 
             };
-
-            // step to the first tile in the path
-            if (this.model.get('path').length > 0) {
-                //console.log('stepTo: ', this.get('path')[0]);
-                self = this;
-                stepTimer = setInterval(function () {
-                    stepTo(this.model.get('path')[0], self);
-                }, 16);
-            }
+            
+        },
+        
+        attack: function () {
+            
+        },
+        
+        reset: function () {
+            this.model.set('movementRange', this.model.get('maxMovementRange'));
+        },
+        
+        tactic: function () {
+            
+        },
+        
+        wait: function () {
+            
         },
         
         onCurrentTileChange: function () {
@@ -88,6 +114,24 @@ define([
             
             return this.model.currentTile;
         },
+        
+        setStartPosition: function (character, tile) {
+            character.set('currentTile', tile);
+            character.set('x', character.get('currentTile').x + constants.grid.TILE_SIZE/2);
+            character.set('y', character.get('currentTile').y + constants.grid.TILE_SIZE/2);
+        },
+        
+        updateAttribute: function(attribute, change) {
+			var currentAttribute = this.model.get(attribute)
+            var currentAvailable = this.model.get('availableAttributePoints');
+            
+            if (currentAttribute < constants.character.ATTRIBUTE_MAX && currentAttribute > 0 && currentAvailable > 0) {
+                this.model.set(attribute, currentAttribute + change);
+                this.model.set('availableAttributePoints', currentAvailable + (change * -1));
+            }
+            
+            return this.model.get(attribute);
+		}
         
 	});
 	
