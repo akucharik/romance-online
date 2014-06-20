@@ -8,9 +8,10 @@ define([
 
 	var CharacterView = Backbone.View.extend({
 		
-		initialize: function(options) {
+		initialize: function (options) {
             this.parent = options.parent;
 			this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
+            this.stepTo = this.stepTo.bind(this);
 		},
         
         moveTo: function (node, callback) {
@@ -22,72 +23,64 @@ define([
         followPath: function (path, node, callback) {
             if (path.length > 0) {
                 //console.log('stepTo: ', this.get('path')[0]);
-                var model = this.model;
-                var view = this;
-                var stepTimer = setInterval(function () {
-                    stepTo(path, node, model, view, callback);
-                }, 16);
+                this.stepTimer = window.setInterval(this.stepTo, 16, path, node, callback);
             }
             else {
                 this.model.set('currentTile', node.path[node.path.length - 1]);
                 this.model.set('movementRange', this.model.get('movementRange') - node.pathCost);
                 callback();
             }
-            
-            var stepTo = function (path, node, context, view, callback) {
+        },
+        
+        stepTo: function (path, node, callback) {
+            var tile = path[0];
+            var targetX = tile.x + constants.grid.TILE_SIZE/2;
+            var targetY = tile.y + constants.grid.TILE_SIZE/2;
+            var increment = 6;
+            var x = this.model.get('x');
+            var y = this.model.get('y');
 
-                var tile = path[0];
-                var targetX = tile.x + constants.grid.TILE_SIZE/2;
-                var targetY = tile.y + constants.grid.TILE_SIZE/2;
-                var increment = 6;
-                var x = context.get('x');
-                var y = context.get('y');
-
-                // move left
-                if (x > targetX) {
-                    increment = Math.abs(increment) * -1;
-                    context.set('x', x + increment);
-                    if (x <= targetX) {
-                        context.set('x', targetX);
-                    }
+            // move left
+            if (x > targetX) {
+                increment = Math.abs(increment) * -1;
+                this.model.set('x', x + increment);
+                if (x <= targetX) {
+                    this.model.set('x', targetX);
                 }
+            }
 
-                // move right
-                if (x < targetX) {
-                    increment = Math.abs(increment);
-                    context.set('x', x + increment);
-                    if (x >= targetX) {
-                        context.set('x', targetX);
-                    }
+            // move right
+            if (x < targetX) {
+                increment = Math.abs(increment);
+                this.model.set('x', x + increment);
+                if (x >= targetX) {
+                    this.model.set('x', targetX);
                 }
+            }
 
-                // move up
-                if (y > targetY) {
-                    increment = Math.abs(increment) * -1;
-                    context.set('y', y + increment);
-                    if (y <= targetY) {
-                        context.set('y', targetY);
-                    }
+            // move up
+            if (y > targetY) {
+                increment = Math.abs(increment) * -1;
+                this.model.set('y', y + increment);
+                if (y <= targetY) {
+                    this.model.set('y', targetY);
                 }
+            }
 
-                // move down
-                if (y < targetY) {
-                    increment = Math.abs(increment);
-                    context.set('y', y + increment);
-                    if (y >= targetY) {
-                        context.set('y', targetY);
-                    }
+            // move down
+            if (y < targetY) {
+                increment = Math.abs(increment);
+                this.model.set('y', y + increment);
+                if (y >= targetY) {
+                    this.model.set('y', targetY);
                 }
+            }
 
-                if (x === targetX && y === targetY) {
-                    clearInterval(stepTimer);
-                    path.shift();
-                    // recursive: move to next tile in path
-                    view.followPath(path, node, callback);
-                }
-
-            };
-            
+            if (x === targetX && y === targetY) {
+                clearInterval(this.stepTimer);
+                path.shift();
+                this.followPath(path, node, callback);
+            }
         },
         
         attack: function () {
