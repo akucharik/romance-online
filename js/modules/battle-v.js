@@ -209,9 +209,53 @@ define([
         
         renderCharacter: function (canvasCtx) {
             this.model.get('characters').forEach(function (e, i) {
+                
+                // character canvas
+                var characterCanvas = document.createElement('canvas');
+                characterCanvas.width = constants.grid.TILE_SIZE;
+                characterCanvas.height = constants.grid.TILE_SIZE;
+                characterCanvasCtx = characterCanvas.getContext('2d');
+                
+                // sprite
                 var spriteWidth = 16;
                 var spriteHeight = 25;
-                canvasCtx.drawImage(e.get('spritesheet'), e.get('spriteX'), e.get('spriteY'), spriteWidth, spriteHeight, e.get('x') - spriteWidth, e.get('y') - spriteHeight, spriteWidth*2, spriteHeight*2);
+                characterCanvasCtx.drawImage(e.get('spritesheet'), e.get('spriteX'), e.get('spriteY'), spriteWidth, spriteHeight, constants.grid.TILE_SIZE / 2 - spriteWidth, constants.grid.TILE_SIZE / 2 - spriteHeight, spriteWidth * 2, spriteHeight * 2);
+                
+                // health number
+                characterCanvasCtx.font = "15px Courier";
+                characterCanvasCtx.textAlign = "right";
+                
+                characterCanvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+                characterCanvasCtx.lineWidth = 4;
+                characterCanvasCtx.strokeText(e.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
+                
+                characterCanvasCtx.fillStyle = 'rgb(255, 255, 255)';
+                characterCanvasCtx.fillText(e.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
+                
+                // health bar
+                characterCanvasCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+                characterCanvasCtx.lineWidth = 1;
+                characterCanvasCtx.beginPath();
+                characterCanvasCtx.rect(3.5, constants.grid.TILE_SIZE - 11.5, constants.grid.TILE_SIZE - 7, 7);
+                characterCanvasCtx.stroke();
+                
+                characterCanvasCtx.fillStyle = 'rgb(0, 0, 0)';
+                characterCanvasCtx.beginPath();
+                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
+                characterCanvasCtx.fill();
+                
+                characterCanvasCtx.fillStyle = 'rgb(0, 255, 0)';
+                characterCanvasCtx.beginPath();
+                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE * (e.get('currentHealth') / e.get('maxHealth')) - 9, 5);
+                characterCanvasCtx.fill();
+                
+                characterCanvasCtx.strokeStyle = 'rgb(0, 255, 0)';
+                characterCanvasCtx.lineWidth = 1;
+                characterCanvasCtx.beginPath();
+                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
+                characterCanvasCtx.stroke();
+                
+                canvasCtx.drawImage(characterCanvas, e.get('x'), e.get('y'));
             });
         },
         

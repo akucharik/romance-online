@@ -34,8 +34,8 @@ define([
         
         stepTo: function (path, node, callback) {
             var tile = path[0];
-            var targetX = tile.x + constants.grid.TILE_SIZE/2;
-            var targetY = tile.y + constants.grid.TILE_SIZE/2;
+            var targetX = tile.x;
+            var targetY = tile.y;
             var increment = 6;
             var x = this.model.get('x');
             var y = this.model.get('y');
@@ -110,8 +110,8 @@ define([
         
         setStartPosition: function (character, tile) {
             character.set('currentTile', tile);
-            character.set('x', character.get('currentTile').x + constants.grid.TILE_SIZE/2);
-            character.set('y', character.get('currentTile').y + constants.grid.TILE_SIZE/2);
+            character.set('x', character.get('currentTile').x);
+            character.set('y', character.get('currentTile').y);
         },
         
         updateAttribute: function(attribute, change) {

@@ -11,6 +11,8 @@ define([
             intelligence: 50,
             strength: 50,
             availableAttributePoints: 50,
+            currentHealth: 6890,
+            maxHealth: 10000,
             currentTile: null,
             maxMovementRange: 4,
             movementRange: 4,
