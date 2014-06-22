@@ -55,30 +55,33 @@ define([
             for (var i = 0; i < neighbors.length; i++) {
                 var currentNeighbor = neighbors[i];
 
-                // visit a new node
-                if (!data.nodes[currentNeighbor.id]) {
-                    var newNode = _.clone(currentNeighbor);
+                if (currentNeighbor.id !== data.startNode.id) {
+                    // visit a new node
+                    if (!data.nodes[currentNeighbor.id]) {
+                        var newNode = _.clone(currentNeighbor);
 
-                    newNode.path = node.path.slice();
-                    newNode.path.push(currentNeighbor);
-                    newNode.pathCost = node.pathCost;
-                    newNode.pathCost += currentNeighbor.cost;
-                    
-                    if (newNode.pathCost <= data.maxPathCost) {
-                        data.nodes[newNode.id] = newNode;
+                        newNode.path = node.path.slice();
+                        newNode.path.push(currentNeighbor);
+                        newNode.pathCost = node.pathCost;
+                        newNode.pathCost += currentNeighbor.cost;
+
+                        if (newNode.pathCost <= data.maxPathCost) {
+                            data.nodes[newNode.id] = newNode;
+                        }
+                        if (newNode.pathCost < data.maxPathCost) {
+                            this.visitNode(newNode, data);
+                        }
                     }
-                    if (newNode.pathCost < data.maxPathCost) {
-                        this.visitNode(newNode, data);
-                    }
-                }
-                // visit an already visited node and assess
-                else {
-                    if (node.pathCost + currentNeighbor.cost <= data.nodes[currentNeighbor.id].pathCost &&
-                        node.path.length < data.nodes[currentNeighbor.id].path.length) {
-                        data.nodes[currentNeighbor.id].pathCost = node.pathCost + currentNeighbor.cost;
-                        data.nodes[currentNeighbor.id].path = node.path.slice();
-                        data.nodes[currentNeighbor.id].path.push(currentNeighbor);
-                        this.visitNode(data.nodes[currentNeighbor.id], data);
+                    // visit an already visited node and assess
+                    else {
+                        if (node.pathCost + currentNeighbor.cost <= data.nodes[currentNeighbor.id].pathCost &&
+                            node.path.length < data.nodes[currentNeighbor.id].path.length) {
+
+                            data.nodes[currentNeighbor.id].pathCost = node.pathCost + currentNeighbor.cost;
+                            data.nodes[currentNeighbor.id].path = node.path.slice();
+                            data.nodes[currentNeighbor.id].path.push(currentNeighbor);
+                            this.visitNode(data.nodes[currentNeighbor.id], data);
+                        }
                     }
                 }
             }
@@ -95,9 +98,11 @@ define([
             startNode.pathCost = 0;
             data = { 
                 maxPathCost: character.get('movementRange'), 
-                nodes: {}
+                nodes: {},
+                startNode: startNode
             };
-            data.nodes[startNode.id] = startNode;
+            
+            //data.nodes[startNode.id] = startNode;
             
             this.nodesInRange = this.visitNode(startNode, data);
             
