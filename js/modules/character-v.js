@@ -84,7 +84,7 @@ define([
         },
         
         attack: function () {
-            
+            console.log("Attack!");
         },
         
         reset: function () {

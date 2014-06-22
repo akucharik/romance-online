@@ -102,8 +102,6 @@ define([
                 startNode: startNode
             };
             
-            //data.nodes[startNode.id] = startNode;
-            
             this.nodesInRange = this.visitNode(startNode, data);
             
             return this.nodesInRange;
@@ -116,6 +114,53 @@ define([
                 }
             };
             return false;
+        },
+        
+        visitNodeAttack: function (node, data) {
+            var neighbors = this.getNeighborNodes(node);
+            
+            for (var i = 0; i < neighbors.length; i++) {
+                var currentNeighbor = neighbors[i];
+
+                if (currentNeighbor.id !== data.startNode.id) {
+                    // visit a new node
+                    if (!data.nodes[currentNeighbor.id]) {
+                        var newNode = _.clone(currentNeighbor);
+
+                        newNode.path = node.path.slice();
+                        newNode.path.push(currentNeighbor);
+                        newNode.pathCost = node.pathCost;
+                        newNode.pathCost++;
+
+                        if (newNode.pathCost <= data.maxPathCost) {
+                            data.nodes[newNode.id] = newNode;
+                        }
+                        if (newNode.pathCost < data.maxPathCost) {
+                            this.visitNode(newNode, data);
+                        }
+                    }
+                }
+            }
+            return data.nodes;
+        },
+        
+        findEnemies: function (character) {
+            var startNode = _.clone(character.get('currentTile')),
+                data = {},
+                result = {}
+            
+            this.nodesInRange = {};
+            startNode.path = [];
+            startNode.pathCost = 0;
+            data = { 
+                maxPathCost: character.get('attackRange'), 
+                nodes: {},
+                startNode: startNode
+            };
+            
+            this.nodesInRange = this.visitNodeAttack(startNode, data);
+            
+            return this.nodesInRange;
         }
 
     });

@@ -104,6 +104,7 @@ define([
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
+                    events.click = 'onCharacterTurnAttackClick';
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
                     break;
@@ -156,15 +157,22 @@ define([
             }
         },
         
+        onCharacterTurnAttackClick: function () {
+            if (this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
+                this.characterView.attack();
+            }
+        },
+        
         onCharacterTurnPrimaryActionChange: function () {
             this.delegateEvents();
             this.stopListening(this.model, 'change:focusedTile');
             this.model.set('characterTurnMovementRange', {});
+            this.model.set('characterTurnAttackRange', {});
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    console.log('Attack');
-                    this.characterView.attack();
+                    //this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
+                    this.model.set('characterTurnAttackRange', this.pathfinder.findEnemies(this.model.get('characterTurnCharacter')));
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
                     console.log('End turn');
@@ -325,6 +333,7 @@ define([
             this.foregroundCtx.clearRect(0, 0, constants.canvas.WIDTH, constants.canvas.HEIGHT);
             this.renderSelectedTile(this.model.get('selectedTile'), this.foregroundCtx);
             this.renderMovement(this.model.get('characterTurnMovementRange'), this.foregroundCtx);
+            this.renderMovement(this.model.get('characterTurnAttackRange'), this.foregroundCtx);
             this.renderPaths([this.model.get('characterTurnPath')], this.foregroundCtx);
             this.renderFocusedTile(this.model.get('focusedTile'), this.foregroundCtx);
             this.renderCharacter(this.foregroundCtx);

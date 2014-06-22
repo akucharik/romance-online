@@ -16,6 +16,7 @@ define([
             characterTurnMovementRange: null,
             characterTurnPath: [],
             characterTurnPrimaryAction: null,
+            characterTurnAttackRange: null,
             
             // tiles
             focusedTile: null,

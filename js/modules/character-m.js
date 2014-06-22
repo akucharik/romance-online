@@ -8,6 +8,7 @@ define([
     
 	var CharacterModel = Backbone.Model.extend({
 		defaults: {
+            attackRange: 1,
             intelligence: 50,
             strength: 50,
             availableAttributePoints: 50,
