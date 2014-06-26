@@ -12,14 +12,10 @@ define([
             this.nodesInRange = {}
         },
         
-        isMoveable: function (x, y) {
-            return this.tiles[Tile.prototype.buildKey(x, y)].isMoveable()
-        },
-        
         addNeighborNode: function (x, y, neighbors) {
-            //if (this.isMoveable(x, y)) {
+            if (this.grid.get('tiles')[Tile.prototype.buildKey(x, y)].isMoveable()) {
                 neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(x, y)]);
-            //}
+            }
         },
         
         getNeighborNodes: function (node) {

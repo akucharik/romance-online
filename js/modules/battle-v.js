@@ -123,6 +123,11 @@ define([
         onMoveComplete: function () {
             this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characterTurnCharacter')));
             this.model.set('selectedTile', this.model.get('characterTurnCharacter').get('currentTile'));
+            // set tile occupation
+            if (this.model.get('characterTurnCharacter').previous('currentTile') !== null) {
+                this.model.get('characterTurnCharacter').previous('currentTile').occupied = null;
+            }
+            this.model.get('characterTurnCharacter').get('currentTile').occupied = this.model.get('characterTurnCharacter');
         },
         
         onFocusedTileChange: function () {
