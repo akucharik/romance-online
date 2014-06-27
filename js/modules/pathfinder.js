@@ -12,12 +12,6 @@ define([
             this.nodesInRange = {}
         },
         
-        addNeighborNode: function (x, y, neighbors) {
-            if (this.grid.get('tiles')[Tile.prototype.buildKey(x, y)].isMoveable()) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(x, y)]);
-            }
-        },
-        
         getNeighborNodes: function (node) {
             var north = node.gridY - 1,
                 south = node.gridY + 1,
@@ -27,19 +21,19 @@ define([
 
             // north
             if (north >= 0) {
-                this.addNeighborNode(node.gridX, north, neighbors);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.gridX, north)]);
             }
             // south
             if (south < this.grid.get('height')) {
-                this.addNeighborNode(node.gridX, south, neighbors);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.gridX, south)]);
             }
             // east
             if (east < this.grid.get('width')) {
-                this.addNeighborNode(east, node.gridY, neighbors);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(east, node.gridY)]);
             }
             // west
             if (west >= 0) {
-                this.addNeighborNode(west, node.gridY, neighbors);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(west, node.gridY)]);
             }
 
             return neighbors;
@@ -51,7 +45,7 @@ define([
             for (var i = 0; i < neighbors.length; i++) {
                 var currentNeighbor = neighbors[i];
 
-                if (currentNeighbor.id !== data.startNode.id) {
+                if (currentNeighbor.id !== data.startNode.id && this.grid.get('tiles')[currentNeighbor.id].isMoveable()) {
                     // visit a new node
                     if (!data.nodes[currentNeighbor.id]) {
                         var newNode = _.clone(currentNeighbor);
@@ -98,9 +92,10 @@ define([
                 startNode: startNode
             };
             
-            this.nodesInRange = this.visitNode(startNode, data);
+            result = this.visitNode(startNode, data);
+            this.nodesInRange = result;
             
-            return this.nodesInRange;
+            return result;
         },
         
         isTileInRange: function (tile) {
@@ -132,7 +127,7 @@ define([
                             data.nodes[newNode.id] = newNode;
                         }
                         if (newNode.pathCost < data.maxPathCost) {
-                            this.visitNode(newNode, data);
+                            this.visitNodeAttack(newNode, data);
                         }
                     }
                 }
@@ -143,9 +138,9 @@ define([
         findEnemies: function (character) {
             var startNode = _.clone(character.get('currentTile')),
                 data = {},
+                nodesInRange = {},
                 result = {}
             
-            this.nodesInRange = {};
             startNode.path = [];
             startNode.pathCost = 0;
             data = { 
@@ -154,9 +149,15 @@ define([
                 startNode: startNode
             };
             
-            this.nodesInRange = this.visitNodeAttack(startNode, data);
+            nodesInRange = this.visitNodeAttack(startNode, data);
             
-            return this.nodesInRange;
+            for (var i in nodesInRange) {
+                if (nodesInRange[i].occupied) {
+                    result[i] = nodesInRange[i];
+                }
+            }
+
+            return result;
         }
 
     });

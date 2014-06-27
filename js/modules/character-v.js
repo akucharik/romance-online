@@ -12,6 +12,7 @@ define([
             this.parent = options.parent;
 			this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
             this.stepTo = this.stepTo.bind(this);
+            this.switchCharacters = this.switchCharacters.bind(this);
 		},
         
         moveTo: function (node, callback) {
@@ -91,6 +92,12 @@ define([
             this.model.set('movementRange', this.model.get('maxMovementRange'));
         },
         
+        switchCharacters: function (model) {
+            this.stopListening(this.model, 'change:currentTile');
+            this.model = model;
+            this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
+        },
+        
         tactic: function () {
             
         },
@@ -104,14 +111,15 @@ define([
                 this.model.previous('currentTile').occupied = null;
             }
             this.model.get('currentTile').occupied = this;
-            
-            return this.model.currentTile;
+
+            return this.model.get('currentTile');
         },
         
         setStartPosition: function (character, tile) {
             character.set('currentTile', tile);
             character.set('x', character.get('currentTile').x);
             character.set('y', character.get('currentTile').y);
+            this.parent.grid.get('tiles')[tile.id].occupied = character;
         },
         
         updateAttribute: function(attribute, change) {
