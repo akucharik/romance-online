@@ -158,9 +158,19 @@ define([
         },
         
         onCharacterTurnAttackClick: function () {
-            if (this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
-                this.characterView.attack();
+            if (this.isTileInAttackRange(this.model.get('focusedTile'))) {
+                this.characterView.attack(this.model.get('focusedTile').occupied);
+                this.model.set('characterTurnAttackRange', {});
             }
+        },
+        
+        isTileInAttackRange: function (tile) {
+            for (var i in this.model.get('characterTurnAttackRange')) {
+                if (i === tile.id) {
+                    return true;
+                }
+            };
+            return false;
         },
         
         onCharacterTurnPrimaryActionChange: function () {
@@ -254,7 +264,7 @@ define([
                 
                 characterCanvasCtx.fillStyle = 'rgb(0, 255, 0)';
                 characterCanvasCtx.beginPath();
-                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE * (e.get('currentHealth') / e.get('maxHealth')) - 9, 5);
+                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, (constants.grid.TILE_SIZE -9) * e.get('currentHealth') / e.get('maxHealth'), 5);
                 characterCanvasCtx.fill();
                 
                 characterCanvasCtx.strokeStyle = 'rgb(0, 255, 0)';

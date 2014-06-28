@@ -84,8 +84,14 @@ define([
             }
         },
         
-        attack: function () {
-            console.log("Attack!");
+        attack: function (target) {
+            var damage = Math.round(Math.random() * 1500);
+            if (target.get('currentHealth') - damage < 0) {
+                target.set('currentHealth', 0);
+            }
+            else {
+                target.set('currentHealth', target.get('currentHealth') - damage);
+            }
         },
         
         reset: function () {
@@ -110,7 +116,7 @@ define([
             if (this.model.previous('currentTile') !== null) {
                 this.model.previous('currentTile').occupied = null;
             }
-            this.model.get('currentTile').occupied = this;
+            this.model.get('currentTile').occupied = this.model;
 
             return this.model.get('currentTile');
         },
