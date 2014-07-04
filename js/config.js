@@ -2,11 +2,10 @@ var require = {
     baseUrl: '',
 	urlArgs: 'bust='+ (new Date().getTime()),
     paths: {
-        backbone: 'libs/backbone',
-        'class': 'libs/class',
-        jquery: 'libs/jquery',
-		jquery_colorbox: 'libs/jquery.colorbox',
-        underscore: 'libs/underscore'
+        backbone: 'lib/backbone-1.1.2',
+        'class': 'lib/class',
+        jquery: 'lib/jquery-2.1.1',
+        underscore: 'lib/underscore-1.6.0'
     },
 	shim: {
 		backbone: {
