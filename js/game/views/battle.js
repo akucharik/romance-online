@@ -1,29 +1,29 @@
 define([
     'backbone',
-    'models/character-m',
-    'collections/character-c',
-    'views/character-v',
+    'collections/character',
     'constants',
-    'models/grid-m',
-    'views/grid-v',
+    'models/character',
+    'models/gameUtilities',
+    'models/grid',
     'models/pathfinder',
-    'models/stateManager-m',
-    'views/characterTurn-v',
-    'models/gameUtilities-m',
-    'views/gameUtilities-v'
+    'models/stateManager',
+    'views/character',
+    'views/characterTurn',
+    'views/gameUtilities',
+    'views/grid'
 ], function (
     Backbone,
-    CharacterModel,
     CharacterCollection,
-    CharacterView,
     constants, 
+    CharacterModel,
+    GameUtilitiesModel, 
     GridModel, 
-    GridView,
     Pathfinder,
     StateManagerModel,
+    CharacterView,
     CharacterTurnView,
-    GameUtilitiesModel, 
-    GameUtilitiesView
+    GameUtilitiesView,
+    GridView
 ) {
 
 	var BattleView = Backbone.View.extend({

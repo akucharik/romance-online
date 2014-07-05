@@ -1,7 +1,7 @@
 define([
-	'jquery',
 	'backbone',
-	'models/character-m'
+	'jquery',
+    'models/character-m'
 ], function($, Backbone, charactersModel) {
 
 	var StartMenuView = Backbone.View.extend({

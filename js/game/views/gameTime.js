@@ -1,9 +1,9 @@
 define([
-	'jquery',
-	'backbone'
+	'backbone',
+    'jquery'
 ], function(
-    $, 
-    Backbone
+    Backbone,
+    $
 ) {
 
 	var TimeView = Backbone.View.extend({

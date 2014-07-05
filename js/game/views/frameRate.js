@@ -1,11 +1,11 @@
 define([
-	'jquery',
 	'backbone',
-    'jsUtilities'
+    'jsUtilities',
+    'jquery',
 ], function(
-    $, 
     Backbone,
-    JsUtilities
+    JsUtilities,
+    $
 ) {
 
 	var FrameRateView = Backbone.View.extend({

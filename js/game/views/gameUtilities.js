@@ -1,11 +1,11 @@
 define([
-	'jquery',
 	'backbone',
-    'views/frameRate-v',
-    'views/gameTime-v'
+    'jquery',
+    'views/frameRate',
+    'views/gameTime'
 ], function(
-    $, 
     Backbone,
+    $, 
     FrameRateView,
     GameTimeView
 ) {

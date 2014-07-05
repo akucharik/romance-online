@@ -1,7 +1,7 @@
 define([
 	'jquery',
-    'models/battle-m',
-    'views/battle-v',
+    'models/battle',
+    'views/battle',
 ], function(
     $, 
     BattleModel,
