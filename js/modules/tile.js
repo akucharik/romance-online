@@ -1,8 +1,6 @@
 define([
-    'class',
     'modules/constants'
 ], function(
-    Class, 
     constants
 ) {
 

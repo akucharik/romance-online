@@ -1,8 +1,6 @@
 define([
-    'class',
     'modules/tile'
 ], function(
-    Class,
     Tile
 ) {
     
