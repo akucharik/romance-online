@@ -1,8 +1,8 @@
 define([
 	'jquery',
 	'backbone',
-    'modules/utilities/frameRate-v',
-    'modules/utilities/gameTime-v'
+    'views/frameRate-v',
+    'views/gameTime-v'
 ], function(
     $, 
     Backbone,

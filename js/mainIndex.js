@@ -1,9 +1,9 @@
 require([
-    'common'
+    './config'
 ], function (
-    common
+    config
 ) {
     require([
-        'game/index'
+        'index'
     ]);
 });

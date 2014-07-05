@@ -1,10 +1,10 @@
 require([
-    'common'
+    './config'
 ], function (
-    common
+    config
 ) {
     require([
         'class', 
-        'game/game'
+        'game'
     ]);
 });

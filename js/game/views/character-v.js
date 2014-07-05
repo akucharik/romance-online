@@ -1,6 +1,6 @@
 define([
 	'backbone',
-    'modules/constants'
+    'constants'
 ], function(
     Backbone,
     constants

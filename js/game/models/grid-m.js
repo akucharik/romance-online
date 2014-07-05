@@ -1,7 +1,7 @@
 define([
 	'backbone',
-    'modules/constants',
-    'modules/tile'
+    'constants',
+    'models/tile'
 ], function(
     Backbone, 
     constants,

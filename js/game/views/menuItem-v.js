@@ -1,7 +1,7 @@
 define([
 	'jquery',
 	'backbone',
-	'modules/menuItem-m'
+	'models/menuItem-m'
 ], function($, Backbone, menuItems) {
 
 	var MenuItemsView = Backbone.View.extend({

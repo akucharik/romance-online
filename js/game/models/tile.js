@@ -1,5 +1,5 @@
 define([
-    'modules/constants'
+    'constants'
 ], function(
     constants
 ) {

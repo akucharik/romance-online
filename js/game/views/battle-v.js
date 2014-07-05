@@ -1,16 +1,16 @@
 define([
     'backbone',
-    'modules/character-m',
-    'modules/character-c',
-    'modules/character-v',
-    'modules/constants',
-    'modules/grid-m',
-    'modules/grid-v',
-    'modules/pathfinder',
-    'modules/stateManager-m',
-    'modules/turn/characterTurn-v',
-    'modules/utilities/gameUtilities-m',
-    'modules/utilities/gameUtilities-v'
+    'models/character-m',
+    'collections/character-c',
+    'views/character-v',
+    'constants',
+    'models/grid-m',
+    'views/grid-v',
+    'models/pathfinder',
+    'models/stateManager-m',
+    'views/characterTurn-v',
+    'models/gameUtilities-m',
+    'views/gameUtilities-v'
 ], function (
     Backbone,
     CharacterModel,

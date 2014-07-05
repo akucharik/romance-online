@@ -1,5 +1,5 @@
 define([
-    'modules/tile'
+    'models/tile'
 ], function(
     Tile
 ) {
