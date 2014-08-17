@@ -73,6 +73,7 @@ define([
             this.stateManager = new StateManagerModel();
             
             // set up additional views
+            // TODO: consider renaming to have "Menu" in the name
             this.characterTurnView = new CharacterTurnView({
                 model: this.model,
                 el: '#characterActionsMenu'
@@ -96,6 +97,8 @@ define([
             window.requestAnimationFrame(this.buildFrame);
 		},
         
+        // TODO: refactor so that 'onMouseClick' is an event that is always attached and contains all the logic
+        // for what to do when the mouse is clicked (in attack mode, do this. in end turn, do this)
         events: function () {
             var events = {};
             
@@ -149,6 +152,7 @@ define([
             // consider refactoring so that all turn changes happen here
         },
         
+        // TODO: once event handling is refactored: maybe rename to 'moveCharacter'
         onCharacterTurnMoveClick: function () {
             if (this.model.get('characterTurnCharacter').get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
                 this.model.set('selectedTile', null);
@@ -157,6 +161,7 @@ define([
             }
         },
         
+        // TODO: once event handling is refactored: maybe rename to 'attack'
         onCharacterTurnAttackClick: function () {
             if (this.isTileInAttackRange(this.model.get('focusedTile'))) {
                 this.characterView.attack(this.model.get('focusedTile').occupied);
@@ -175,6 +180,7 @@ define([
         
         onCharacterTurnPrimaryActionChange: function () {
             this.delegateEvents();
+            // TODO: do the same here, refactor so that always listening, but do nothing when in certain modes
             this.stopListening(this.model, 'change:focusedTile');
             this.model.set('characterTurnMovementRange', {});
             this.model.set('characterTurnAttackRange', {});
@@ -188,7 +194,8 @@ define([
                     console.log('End turn');
                     this.characterView.reset();
                     this.model.resetCharacterTurn();
-                    if(this.model.get('characters').indexOf(this.model.get('characterTurnCharacter')) < this.model.get('characters').length - 1) {
+                    // TODO: makes this a function that is "chooseNextCharacter" or "switchCharacters" or something
+                    if (this.model.get('characters').indexOf(this.model.get('characterTurnCharacter')) < this.model.get('characters').length - 1) {
                         this.model.set('characterTurnCharacter', this.model.get('characters').at(this.model.get('characters').indexOf(this.model.get('characterTurnCharacter')) + 1));
                     }
                     else {
@@ -199,6 +206,7 @@ define([
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
                     console.log('Move');
+                    // TODO: do the same here, refactor so that always listening, but do nothing when in certain modes
                     this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
                     this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characterTurnCharacter')));
                     break;
@@ -296,6 +304,10 @@ define([
             };
         },
 
+        // TODO: refactor the ways these tiles are rendered. They are almost identical, but different constants.
+        // Create a single function that takes (tile, tileDisplayObject or possibly an array of 2 objects, canvasCtx)
+        // this "display object" can be a constant itself
+        // Separate all this into the Tile view
         renderFocusedTile: function (tile, canvasCtx) {
             if (tile !== null && tile !== undefined) {
                 canvasCtx.strokeStyle = constants.grid.FOCUSED_BORDER_FILL_STYLE;

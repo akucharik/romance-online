@@ -23,6 +23,7 @@ define([
             selectedTile: null
 		},
         
+        // TODO: put this in the view, NOT the model
         resetCharacterTurn: function () {
             this.set('characterTurnPrimaryAction', null);
             this.set('characterTurnMovementRange', null);

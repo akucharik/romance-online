@@ -43,15 +43,16 @@ define([
             for (var i = 0; i < neighbors.length; i++) {
                 var currentNeighbor = neighbors[i];
 
+                // TODO: consider creating a function like "shouldBeVisited"
                 if (currentNeighbor.id !== data.startNode.id && this.grid.get('tiles')[currentNeighbor.id].isMoveable()) {
                     // visit a new node
                     if (!data.nodes[currentNeighbor.id]) {
                         var newNode = _.clone(currentNeighbor);
 
+                        // TODO: consider refactoring this to have a single function call for this and lines 68-70
                         newNode.path = node.path.slice();
                         newNode.path.push(currentNeighbor);
-                        newNode.pathCost = node.pathCost;
-                        newNode.pathCost += currentNeighbor.cost;
+                        newNode.pathCost = node.pathCost + currentNeighbor.cost;
 
                         if (newNode.pathCost <= data.maxPathCost) {
                             data.nodes[newNode.id] = newNode;
@@ -62,6 +63,7 @@ define([
                     }
                     // visit an already visited node and assess
                     else {
+                        // TODO: consider creating a function like "isAlreadyVisitedAndShouldBeRevisited"
                         if (node.pathCost + currentNeighbor.cost <= data.nodes[currentNeighbor.id].pathCost &&
                             node.path.length < data.nodes[currentNeighbor.id].path.length) {
 
@@ -79,7 +81,7 @@ define([
         findPaths: function (character) {
             var startNode = _.clone(character.get('currentTile')),
                 data = {},
-                result = {}
+                result = {};
             
             this.nodesInRange = {};
             startNode.path = [];
