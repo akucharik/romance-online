@@ -1,7 +1,12 @@
 body {
     background-color: rgb(50,50,50);
+    color: rgb(255,255,255);
     font-family: sans-serif;
     margin: 1.0em;
+}
+
+button {
+    cursor: pointer;
 }
 
 .canvas {
