@@ -1,27 +1,34 @@
 define([
     'jquery',
     'collections/character',
+    'models/character',
     'models/mainMenu',
-    'views/mainMenu'
+    'views/mainMenu',
+    'views/characterList'
 ], function(
     $,
     CharacterCollection,
+    Character,
     MainMenuModel,
-    MainMenuView
+    MainMenuView,
+    CharacterListView
 ) {
     
     var mainMenuModel = new MainMenuModel();
-    var savedGames = Backbone.Collection.extend({
-		
-	});
-    var savedCharacters = new CharacterCollection();
-    mainMenuModel.set('savedGames', savedGames);
-    mainMenuModel.set('savedCharacters', savedCharacters);
 
+    mainMenuModel.get('savedCharacters').add([
+        new Character({ name: 'Aaron' }),
+        new Character({ name: 'Adam' }),
+        new Character({ name: 'Chris' })
+    ]);
+    
+    // TODO: remove exposed characters after development
+    window.characters = mainMenuModel.get('savedCharacters');
+        
     var mainMenuView = new MainMenuView({
         el: '#mainMenu',
         model: mainMenuModel,
-        continueGame: '#continueGame',
-        editCharacter: '#editCharacter'
+        template: '#mainMenuTemplate'
     });
+        
 });

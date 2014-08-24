@@ -1,18 +1,17 @@
 define([
-	'backbone'
+	'backbone',
+    'collections/character',
 ], function(
-    Backbone
+    Backbone,
+    CharacterCollection
 ) {
     
 	var MainMenuModel = Backbone.Model.extend({
 		defaults: {
-            savedCharacters: null,
-            savedGames: null
-		},
-        
-        initialize: function () {
-            
-        }
+            savedCharacters: new CharacterCollection(),
+            savedGames: Backbone.Collection.extend({}),
+            characterListItemViews: []
+		}
 
 	});
 	

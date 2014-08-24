@@ -17,6 +17,7 @@ define([
             currentTile: null,
             maxMovementRange: 4,
             movementRange: 4,
+            name: 'Unknown',
             spritesheet: document.getElementById('spritesheet'),
             spriteX: 0,
             spriteY: 0,
