@@ -9,8 +9,7 @@ define([
 	var MainMenuModel = Backbone.Model.extend({
 		defaults: {
             savedCharacters: new CharacterCollection(),
-            savedGames: Backbone.Collection.extend({}),
-            characterListItemViews: []
+            savedGames: Backbone.Collection.extend({})
 		}
 
 	});

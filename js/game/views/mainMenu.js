@@ -12,15 +12,17 @@ define([
 		
 		initialize: function (options) {
             this.options = options;
+            this.parentEl = document.querySelector(this.options.parentEl);
+            this.$parentEl = $(this.parentEl);
             this.template = _.template($(this.options.template).html());
+            
             this.render();
 		},
         
         render: function () {
             this.$el.html(this.template(this.model.toJSON()));
-            this.$continueGame = $('#continueGame');
-            this.$editCharacter = $('#editCharacter');
-            
+            this.$continueGame = this.$el.find('#continueGame');
+            this.$editCharacter = this.$el.find('#editCharacter');
             this.model.get('savedGames').length > 0 ? this.$continueGame.show() : this.$continueGame.hide();
             this.model.get('savedCharacters').length > 0 ? this.$editCharacter.show() : this.$editCharacter.hide();
 
@@ -44,9 +46,14 @@ define([
         
         editCharacter: function () {
             this.characterListView = new CharacterListView({
-                el: '#characterList',
-                model: this.model
+                className: 'character-list',
+                collection: this.model.get('savedCharacters'),
+                id: 'characterList',
+                tagName: 'ul',
             });
+            
+            this.$parentEl.append(this.characterListView.el);
+            this.remove();
         },
         
         newCharacter: function () {

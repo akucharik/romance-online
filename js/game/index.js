@@ -1,34 +1,37 @@
 define([
+    'backbone',
     'jquery',
-    'collections/character',
     'models/character',
     'models/mainMenu',
-    'views/mainMenu',
-    'views/characterList'
+    'views/mainMenu'
 ], function(
+    Backbone,
     $,
-    CharacterCollection,
     Character,
     MainMenuModel,
-    MainMenuView,
-    CharacterListView
+    MainMenuView
 ) {
     
     var mainMenuModel = new MainMenuModel();
-
+    
     mainMenuModel.get('savedCharacters').add([
         new Character({ name: 'Aaron' }),
         new Character({ name: 'Adam' }),
         new Character({ name: 'Chris' })
     ]);
+        
+    var mainMenuView = new MainMenuView({
+        className: 'menu',
+        id: 'mainMenu',
+        model: mainMenuModel,
+        parentEl: '#homeScreen',
+        tagName: 'ul',
+        template: '#mainMenuTemplate'
+    });
+    
+    $('#homeScreen').append(mainMenuView.el);
     
     // TODO: remove exposed characters after development
     window.characters = mainMenuModel.get('savedCharacters');
-        
-    var mainMenuView = new MainMenuView({
-        el: '#mainMenu',
-        model: mainMenuModel,
-        template: '#mainMenuTemplate'
-    });
         
 });

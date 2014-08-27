@@ -11,6 +11,7 @@ define([
 		initialize: function (options) {
             this.options = options;
             this.template = _.template($(this.options.template).html());
+            
             this.listenTo(this.model, 'change', this.render);
             this.render();
 		},

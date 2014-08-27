@@ -5,31 +5,66 @@ define([
 ], function(
     Backbone,
     $,
-    CharacterListItem
+    CharacterListItemView
 ) {
 
 	var CharacterListView = Backbone.View.extend({
 		
 		initialize: function () {
-            this.model.get('savedCharacters').each(function (character) {
-                this.model.get('characterListItemViews').push(
-                    new CharacterListItem({
-                        tagName: 'li',
-                        model: character,
-                        template: '#characterListItemTemplate'
-                    })
-                );
-            }, this);
+            this.$placeholder = $(document.createDocumentFragment());
+            
+            this.listenTo(this.collection, 'add remove', this.render);
             this.render();
 		},
         
         render: function () {
-            this.model.get('characterListItemViews').forEach(function (view) {
-                this.$el.append(view.el);
+            this.$placeholder.empty();
+            
+            this.collection.each(function (character) {
+                var characterListItemView = new CharacterListItemView({
+                    model: character,
+                    tagName: 'li',
+                    template: '#characterListItemTemplate'
+                });
+                this.$placeholder.append(characterListItemView.el);
             }, this);
 
+            this.$el.html(this.$placeholder);
+            
             return this;
         }
+        
+//        // This is an experiment in caching views.
+//        // Not necessary here, but will need for canvas rendering performance elsewhere.
+//        buildViews: function () {
+//            this.views = [];
+//            
+//            this.collection.each(function (character) {
+//                this.views.push(
+//                    new CharacterListItem({
+//                        model: character,
+//                        tagName: 'li',
+//                        template: '#characterListItemTemplate'
+//                    })
+//                );
+//            }, this);
+//        },
+        
+//        render: function () {
+//            this.views.forEach(function (view) {
+//                this.$placeholder.append(view.el);
+//            }, this);
+//
+//            this.$el.empty();
+//            this.$el.append(this.$placeholder)
+//            
+//            return this;
+//        },
+        
+//        rerender: function () {
+//            this.buildViews();
+//            this.render();
+//        }
         
 	});
 	
