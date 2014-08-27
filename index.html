@@ -10,10 +10,19 @@
     </div>
         
     <script id="mainMenuTemplate" type="text/template">
-        <li><button id="continueGame">Continue Game</button></li>
-        <li><button id="newGame">New Game</button></li>
-        <li><button id="editCharacter">Edit Character</button></li>
-        <li><button id="newCharacter">New Character</button></li>
+        <ul class="menu main-menu">
+            <li><button id="continueGame">Continue Game</button></li>
+            <li><button id="newGame">New Game</button></li>
+            <li><button id="editCharacter">Edit Character</button></li>
+            <li><button id="newCharacter">New Character</button></li>
+        </ul>
+    </script>
+    
+    <script id="charactersTemplate" type="text/template">
+        <ul id="characterList" class="character-list"></ul>
+        <ul class="menu">
+            <li><button id="mainMenu">Main Menu</button></li>
+        </ul>
     </script>
     
     <script id="characterListItemTemplate" type="text/template">

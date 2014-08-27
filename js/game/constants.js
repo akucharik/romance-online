@@ -64,6 +64,14 @@ define(function() {
                 OBSTACLE: 2,
                 TREE: 3
             }
+        },
+        
+        home: {
+            mode: {
+                MAIN_MENU: 1,
+                GAMES: 2,
+                CHARACTERS: 3
+            }
         }
         
     }

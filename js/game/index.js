@@ -1,37 +1,67 @@
 define([
     'backbone',
     'jquery',
+    'constants',
     'models/character',
+    'models/home',
     'models/mainMenu',
     'views/mainMenu'
 ], function(
     Backbone,
     $,
-    Character,
+    constants,
+    CharacterModel,
+    HomeModel,
     MainMenuModel,
     MainMenuView
 ) {
     
-    var mainMenuModel = new MainMenuModel();
+    var homeModel = new HomeModel();
     
-    mainMenuModel.get('savedCharacters').add([
-        new Character({ name: 'Aaron' }),
-        new Character({ name: 'Adam' }),
-        new Character({ name: 'Chris' })
+    homeModel.get('savedCharacters').add([
+        new CharacterModel({ name: 'Aaron' }),
+        new CharacterModel({ name: 'Adam' }),
+        new CharacterModel({ name: 'Chris' })
     ]);
         
-    var mainMenuView = new MainMenuView({
-        className: 'menu',
-        id: 'mainMenu',
-        model: mainMenuModel,
-        parentEl: '#homeScreen',
-        tagName: 'ul',
-        template: '#mainMenuTemplate'
+    var HomeView = Backbone.View.extend({
+        initialize: function () {
+            this.listenTo(this.model, 'change:mode', this.render);
+            this.render();
+		},
+        
+        render: function () {
+
+            switch (this.model.get('mode')) {
+                case constants.home.mode.MAIN_MENU:
+                    var mainMenuView = new MainMenuView({
+                        className: 'main-menu-view',
+                        id: 'mainMenuView',
+                        model: homeModel,
+                        parentEl: '#homeScreen',
+                        template: '#mainMenuTemplate'
+                    });
+                    $('#homeScreen').append(mainMenuView.el);
+                    break;
+                
+                case constants.home.mode.GAMES:
+                    console.log('view saved games!');    
+                    break;
+                    
+                case constants.home.mode.CHARACTERS:
+                    console.log('view saved characters!');    
+                    break;
+            }
+        }
     });
     
-    $('#homeScreen').append(mainMenuView.el);
+    var homeView = new HomeView({
+        el: '#homeScreen',
+        model: homeModel
+    });
     
     // TODO: remove exposed characters after development
-    window.characters = mainMenuModel.get('savedCharacters');
+    window.homeModel = homeModel;
+    window.homeView = homeView;
         
 });

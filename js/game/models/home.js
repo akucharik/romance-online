@@ -1,19 +1,21 @@
 define([
 	'backbone',
     'collections/character',
+    'constants'
 ], function(
     Backbone,
-    CharacterCollection
+    CharacterCollection,
+    constants
 ) {
-    // TODO: THIS ENTIRE MODEL IS NO LONGER USED AND CAN BE DELETED
-	var MainMenuModel = Backbone.Model.extend({
+    
+	var HomeModel = Backbone.Model.extend({
 		defaults: {
-            mode: 'Main', // Main, Characters, Games
+            mode: constants.home.mode.MAIN_MENU,
             savedCharacters: new CharacterCollection(),
             savedGames: Backbone.Collection.extend({})
 		}
 
 	});
 	
-	return MainMenuModel;
+	return HomeModel;
 });

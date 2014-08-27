@@ -1,11 +1,15 @@
 define([
 	'backbone',
     'jquery',
-    'views/characterList'
+    'views/characters',
+    'views/characterList',
+    'constants'
 ], function(
     Backbone,
     $,
-    CharacterListView
+    CharactersView,
+    CharacterListView,
+    constants
 ) {
 
 	var MainMenuView = Backbone.View.extend({
@@ -45,14 +49,17 @@ define([
         },
         
         editCharacter: function () {
-            this.characterListView = new CharacterListView({
-                className: 'character-list',
-                collection: this.model.get('savedCharacters'),
-                id: 'characterList',
-                tagName: 'ul',
+            this.model.set('mode', constants.home.mode.CHARACTERS);
+            
+            this.charactersView = new CharactersView({
+                className: 'characters-view',
+                id: 'charactersView',
+                model: this.model,
+                template: '#charactersTemplate'
             });
             
-            this.$parentEl.append(this.characterListView.el);
+            this.$parentEl.append(this.charactersView.el);
+
             this.remove();
         },
         
