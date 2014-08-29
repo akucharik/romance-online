@@ -24,7 +24,7 @@ define([
             this.collection.each(function (character) {
                 var characterListItemView = new CharacterListItemView({
                     model: character,
-                    tagName: 'li',
+                    tagName: 'tr',
                     template: '#characterListItemTemplate'
                 });
                 this.$placeholder.append(characterListItemView.el);

@@ -5,9 +5,11 @@
 	<link type="text/css" media="screen" rel="stylesheet" href="css/game.css">
 </head>
 <body>
-	<h1>Romance of the Three Kingdoms Online</h1>
-    <div id="activeView">
-        
+	<div class="home">
+        <h1>Romance of the Three Kingdoms Online</h1>
+        <div id="activeView">
+
+        </div>
     </div>
         
     <script id="mainMenuTemplate" type="text/template">
@@ -20,14 +22,26 @@
     </script>
     
     <script id="charactersTemplate" type="text/template">
-        <ul id="characterList" class="character-list"></ul>
-        <ul class="menu">
+        <ul class="menu-horizontal">
             <li><button id="mainMenu">Main Menu</button></li>
+            <li><button id="newCharacter">New Character</button></li>
         </ul>
+        
+        <table id="characterList" class="character-list">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Str</th>
+                    <th>Int</th>
+                </tr>
+            </thead>
+        </table>
     </script>
     
     <script id="characterListItemTemplate" type="text/template">
-        <%= name %>, <%= strength %>, <%= intelligence %>
+        <td><%= name %></td>
+        <td><%= strength %></td>
+        <td><%= intelligence %></td>
     </script>
     
 	<script src="js/libraries/require-2.1.14.js" data-main="js/mainIndex.js"></script>

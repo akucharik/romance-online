@@ -1,7 +1,8 @@
 body {
-    background-color: rgb(50,50,50);
+    background: rgb(50,50,50) url('../images/demoBkgdFloral.jpg');
     color: rgb(255,255,255);
     font-family: sans-serif;
+    font-size: 0.85em;
     margin: 1.0em;
 }
 
@@ -32,10 +33,15 @@ button {
 
 
 /* Menu */
-.menu {
+.menu,
+.menu-horizontal {
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+
+.menu-horizontal > li {
+    display: inline;
 }
 
 /* Character actions */
@@ -67,3 +73,95 @@ button {
  .time {
     top: 4.0em;
  }
+
+
+/* Table */
+table {
+	background: rgba(0,0,0,0.8);
+    border: 1px solid rgb(30,30,30);
+	border-collapse: collapse;
+    box-shadow: 0 0 1.0em rgba(0,0,0,0.5);
+	color: #fff;
+    line-height: 1.2;
+    margin: 0.2em 0;
+	text-align: left;
+}	
+
+thead > tr {
+    display: block;
+    position: relative;
+}
+
+th, td {
+    padding: 1.0em 1.5em;
+}
+
+th {
+	background-color: rgb(0,0,0);
+    font-weight: bold;
+	padding-top: 1.2em;
+    padding-bottom: 1.2em;
+	position: relative;
+	text-shadow: 0 1px 0 #000;	
+}
+
+th:after {
+	background: linear-gradient(rgba(255,255,255,0), rgba(255,255,255,0.2));
+	content: '';
+	display: block;
+	height: 50%;
+	left: 0;
+	position: absolute;
+	top: 0%;
+	width: 100%;
+}
+
+tbody {
+    display: block;
+    overflow-y: auto;
+}
+
+tbody > tr:nth-child(odd) {
+	background-color: rgba(255,255,255,0.1);
+}	
+
+tbody > tr:hover {
+	background-color: rgba(255,255,255,0.2);
+    cursor: pointer;
+}
+
+td {
+	position: relative;
+	transition: all 300ms;
+}
+
+
+/* Home */
+.home {
+    margin: 0 auto;
+    text-align: center;
+    width: 800px
+}
+
+/* Home: Character list */
+.character-list {
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.character-list > tbody {
+    max-height: 30.75em;
+}
+
+.character-list th:nth-child(1),
+.character-list td:nth-child(1) {
+    width: 15em;
+}
+
+.character-list th:nth-child(2),
+.character-list td:nth-child(2),
+.character-list th:nth-child(3),
+.character-list td:nth-child(3) {
+    text-align: right;
+    width: 2em;
+}

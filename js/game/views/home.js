@@ -31,6 +31,7 @@ define([
                         className: 'main-menu-view',
                         id: 'mainMenuView',
                         model: this.model,
+                        tagName: 'div',
                         template: '#mainMenuTemplate'
                     });
                     break;
@@ -44,6 +45,7 @@ define([
                         className: 'characters-view',
                         id: 'charactersView',
                         model: this.model,
+                        tagName: 'div',
                         template: '#charactersTemplate'
                     });
                     break;

@@ -23,7 +23,9 @@ define([
             this.$el.html(this.template());
             
             this.characterListView = new CharacterListView({
-                collection: this.model.get('savedCharacters')
+                collection: this.model.get('savedCharacters'),
+                id: 'characterListItems',
+                tagName: 'tbody'
             });
             
             this.$el.find('#characterList').append(this.characterListView.el);
