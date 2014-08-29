@@ -1,14 +1,10 @@
 define([
 	'backbone',
     'jquery',
-    'views/characters',
-    'views/characterList',
     'constants'
 ], function(
     Backbone,
     $,
-    CharactersView,
-    CharacterListView,
     constants
 ) {
 
@@ -16,8 +12,6 @@ define([
 		
 		initialize: function (options) {
             this.options = options;
-            this.parentEl = document.querySelector(this.options.parentEl);
-            this.$parentEl = $(this.parentEl);
             this.template = _.template($(this.options.template).html());
             
             this.render();
@@ -49,21 +43,11 @@ define([
         },
         
         editCharacter: function () {
-            this.model.set('mode', constants.home.mode.CHARACTERS);
-            
-            this.charactersView = new CharactersView({
-                className: 'characters-view',
-                id: 'charactersView',
-                model: this.model,
-                template: '#charactersTemplate'
-            });
-            
-            this.$parentEl.append(this.charactersView.el);
-
-            this.remove();
+            this.model.set('state', constants.home.state.CHARACTERS);
         },
         
         newCharacter: function () {
+            this.model.set('state', constants.home.state.CHARACTERS);
             console.log('new character');
         }
         

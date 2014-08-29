@@ -67,7 +67,7 @@ define(function() {
         },
         
         home: {
-            mode: {
+            state: {
                 MAIN_MENU: 1,
                 GAMES: 2,
                 CHARACTERS: 3

@@ -32,12 +32,11 @@ define([
         },
         
         events: {
-            'click #mainMenu': 'mainMenu',
+            'click #mainMenu': 'onMainMenuClick',
         },
         
-        mainMenu: function () {
-            this.model.set('mode', constants.home.mode.MAIN_MENU);
-            this.remove();
+        onMainMenuClick: function () {
+            this.model.set('state', constants.home.state.MAIN_MENU);
         }
         
 	});

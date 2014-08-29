@@ -1,17 +1,22 @@
 define([
 	'backbone',
+    'constants',
     'collections/character',
-    'constants'
+    'models/character'
 ], function(
     Backbone,
+    constants,
     CharacterCollection,
-    constants
+    CharacterModel
 ) {
     
 	var HomeModel = Backbone.Model.extend({
 		defaults: {
-            mode: constants.home.mode.MAIN_MENU,
-            savedCharacters: new CharacterCollection(),
+            state: constants.home.state.MAIN_MENU,
+            savedCharacters: new CharacterCollection([], {
+                model: CharacterModel,
+                comparator: 'name'
+            }),
             savedGames: Backbone.Collection.extend({})
 		}
 

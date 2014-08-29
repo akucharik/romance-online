@@ -13,11 +13,12 @@ define([
 		initialize: function () {
             this.$placeholder = $(document.createDocumentFragment());
             
-            this.listenTo(this.collection, 'add remove', this.render);
+            this.listenTo(this.collection, 'add change:name remove', this.render);
             this.render();
 		},
         
         render: function () {
+            this.collection.sort();
             this.$placeholder.empty();
             
             this.collection.each(function (character) {
