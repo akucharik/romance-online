@@ -101,35 +101,16 @@ define([
             // set up events
             this.listenTo(this.model, 'change:characterTurnPrimaryAction', this.onCharacterTurnPrimaryActionChange);
             this.listenTo(this.model, 'change:characterTurnCharacter', this.onTurnChange);
+            this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
             
             // start rendering engine
             window.requestAnimationFrame(this.buildFrame);
 		},
         
-        // TODO: refactor so that 'onMouseClick' is an event that is always attached and contains all the logic
-        // for what to do when the mouse is clicked (in attack mode, do this. in end turn, do this)
-        events: function () {
-            var events = {};
-            
-            events.mousemove = 'onMouseMove';
-            events.mouseleave = 'onMouseLeave';
-            
-            switch (this.model.get('characterTurnPrimaryAction')) {
-                case constants.characterTurn.primaryAction.ATTACK:
-                    events.click = 'onCharacterTurnAttackClick';
-                    break;
-                case constants.characterTurn.primaryAction.END_TURN:
-                    break;
-                case constants.characterTurn.primaryAction.MOVE:
-                    events.click = 'onCharacterTurnMoveClick';
-                    break;
-                case constants.characterTurn.primaryAction.TACTIC:
-                    break;
-                case constants.characterTurn.primaryAction.WAIT:
-                    break;
-            }
-            
-            return events;
+        events: {
+            'click': 'onClick',
+            'mouseleave': 'onMouseLeave',
+            'mousemove': 'onMouseMove'
         },
         
         onMoveComplete: function () {
@@ -138,12 +119,14 @@ define([
         },
         
         onFocusedTileChange: function () {
-            var focusedTile = this.model.get('focusedTile');
-            if (!focusedTile || !this.pathfinder.isTileInRange(focusedTile)) {
-                this.model.set('characterTurnPath', []);
-            }
-            else if (focusedTile.isMoveable()) {
-                this.model.set('characterTurnPath', this.pathfinder.nodesInRange[focusedTile.id].path);
+            if (this.model.get('characterTurnPrimaryAction') === constants.characterTurn.primaryAction.MOVE) {
+                var focusedTile = this.model.get('focusedTile');
+                if (!focusedTile || !this.pathfinder.isTileInRange(focusedTile)) {
+                    this.model.set('characterTurnPath', []);
+                }
+                else if (focusedTile.isMoveable()) {
+                    this.model.set('characterTurnPath', this.pathfinder.nodesInRange[focusedTile.id].path);
+                }
             }
         },
         
@@ -152,30 +135,45 @@ define([
         },
         
         onMouseLeave: function (event) {
-            // remove mousemove triggered visuals when mouse is not over canvas
+            // removes mousemove triggered visuals when mouse is not over canvas
             this.model.set('focusedTile', null);
             this.model.set('characterTurnPath', []);
         },
         
         onTurnChange: function () {
-            // consider refactoring so that all turn changes happen here
+            // TODO: consider refactoring so that all turn changes happen here
         },
         
-        // TODO: once event handling is refactored: maybe rename to 'moveCharacter'
-        onCharacterTurnMoveClick: function () {
-            if (this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
-                this.model.set('selectedTile', null);
-                this.model.set('characterTurnPath', []);
-                this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').id], this.onMoveComplete);
+        onClick: function () {
+            switch (this.model.get('characterTurnPrimaryAction')) {
+                case constants.characterTurn.primaryAction.ATTACK:
+                    if (this.isTileInAttackRange(this.model.get('focusedTile'))) {
+                        this.attack();
+                    }
+                    break;
+                case constants.characterTurn.primaryAction.END_TURN:
+                    break;
+                case constants.characterTurn.primaryAction.MOVE:
+                    if (this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
+                        this.moveCharacter();
+                    }
+                    break;
+                case constants.characterTurn.primaryAction.TACTIC:
+                    break;
+                case constants.characterTurn.primaryAction.WAIT:
+                    break;
             }
         },
         
-        // TODO: once event handling is refactored: maybe rename to 'attack'
-        onCharacterTurnAttackClick: function () {
-            if (this.isTileInAttackRange(this.model.get('focusedTile'))) {
-                this.characterViews[this.model.get('characterTurnCharacter')].attack(this.model.get('focusedTile').occupied);
-                this.model.set('characterTurnAttackRange', {});
-            }
+        moveCharacter: function () {
+            this.model.set('selectedTile', null);
+            this.model.set('characterTurnPath', []);
+            this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').id], this.onMoveComplete);
+        },
+        
+        attack: function () {
+            this.characterViews[this.model.get('characterTurnCharacter')].attack(this.model.get('focusedTile').occupied);
+            this.model.set('characterTurnAttackRange', {});
         },
         
         isTileInAttackRange: function (tile) {
@@ -188,15 +186,11 @@ define([
         },
         
         onCharacterTurnPrimaryActionChange: function () {
-            this.delegateEvents();
-            // TODO: do the same here, refactor so that always listening, but do nothing when in certain modes
-            this.stopListening(this.model, 'change:focusedTile');
             this.model.set('characterTurnMovementRange', {});
             this.model.set('characterTurnAttackRange', {});
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    //this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
                     this.model.set('characterTurnAttackRange', this.pathfinder.findEnemies(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
@@ -215,8 +209,6 @@ define([
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
                     console.log('Move');
-                    // TODO: do the same here, refactor so that always listening, but do nothing when in certain modes
-                    this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
                     this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.TACTIC:
