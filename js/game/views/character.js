@@ -10,10 +10,62 @@ define([
 		
 		initialize: function (options) {
             this.parent = options.parent;
-			this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
+			this.elCtx = this.el.getContext('2d');
+            this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
             this.stepTo = this.stepTo.bind(this);
             this.switchCharacters = this.switchCharacters.bind(this);
 		},
+        
+        render: function () {
+            this.el.width = constants.grid.TILE_SIZE;
+            this.el.height = constants.grid.TILE_SIZE;
+            this.elCtx.drawImage(
+                this.model.get('spritesheet'), 
+                this.model.get('spriteX'), 
+                this.model.get('spriteY'), 
+                this.model.get('spriteWidth'),
+                this.model.get('spriteHeight'),
+                constants.grid.TILE_SIZE / 2 - this.model.get('spriteWidth'), 
+                constants.grid.TILE_SIZE / 2 - this.model.get('spriteHeight'), 
+                this.model.get('spriteWidth') * 2, 
+                this.model.get('spriteHeight') * 2);
+            
+            // health number
+            this.elCtx.font = "15px Courier";
+            this.elCtx.textAlign = "right";
+
+            this.elCtx.strokeStyle = 'rgb(0, 0, 0)';
+            this.elCtx.lineWidth = 4;
+            this.elCtx.strokeText(this.model.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
+
+            this.elCtx.fillStyle = 'rgb(255, 255, 255)';
+            this.elCtx.fillText(this.model.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
+
+            // health bar
+            this.elCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+            this.elCtx.lineWidth = 1;
+            this.elCtx.beginPath();
+            this.elCtx.rect(3.5, constants.grid.TILE_SIZE - 11.5, constants.grid.TILE_SIZE - 7, 7);
+            this.elCtx.stroke();
+
+            this.elCtx.fillStyle = 'rgb(0, 0, 0)';
+            this.elCtx.beginPath();
+            this.elCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
+            this.elCtx.fill();
+
+            this.elCtx.fillStyle = 'rgb(0, 255, 0)';
+            this.elCtx.beginPath();
+            this.elCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, (constants.grid.TILE_SIZE -9) * this.model.get('currentHealth') / this.model.get('maxHealth'), 5);
+            this.elCtx.fill();
+
+            this.elCtx.strokeStyle = 'rgb(0, 255, 0)';
+            this.elCtx.lineWidth = 1;
+            this.elCtx.beginPath();
+            this.elCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
+            this.elCtx.stroke();
+            
+            return this;
+        },
         
         moveTo: function (node, callback) {
             var endTile = node.path.slice(node.length - 1);
@@ -121,11 +173,11 @@ define([
             return this.model.get('currentTile');
         },
         
-        setStartPosition: function (character, tile) {
-            character.set('currentTile', tile);
-            character.set('x', character.get('currentTile').x);
-            character.set('y', character.get('currentTile').y);
-            this.parent.grid.get('tiles')[tile.id].occupied = character;
+        setStartPosition: function (tile) {
+            this.model.set('currentTile', tile);
+            this.model.set('x', this.model.get('currentTile').x);
+            this.model.set('y', this.model.get('currentTile').y);
+            this.parent.grid.get('tiles')[tile.id].occupied = this.model;
         },
         
         updateAttribute: function(attribute, change) {

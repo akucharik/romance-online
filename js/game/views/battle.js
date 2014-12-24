@@ -50,23 +50,32 @@ define([
             // set up characters
             this.character1 = new CharacterModel({
                 spriteX: 205,
-                spriteY: 486
+                spriteY: 486,
+                spriteWidth: 16,
+                spriteHeight: 25
             });
             this.character2 = new CharacterModel({
                 spriteX: 313,
-                spriteY: 143
+                spriteY: 143,
+                spriteWidth: 16,
+                spriteHeight: 25
             });
+            this.character1View = new CharacterView({
+                model: this.character1,
+                tagName: 'canvas',
+                parent: this
+            });
+            this.character2View = new CharacterView({
+                model: this.character2,
+                tagName: 'canvas',
+                parent: this
+            });
+            
             this.model.set('characters', new CharacterCollection([this.character1, this.character2], {model: CharacterModel}));
-            this.model.set('characterTurnCharacter', this.model.get('characters').at(0)),
-            
-            this.characterView = new CharacterView({
-                parent: this,
-                model: this.model.get('characterTurnCharacter')
-            });
-            
-            this.characterView.setStartPosition(this.character1, this.grid.getTile(1, 1));
-            this.characterView.setStartPosition(this.character2, this.grid.getTile(3, 2));
-            
+            this.characterViews = [this.character1View, this.character2View];
+            this.model.set('characterTurnCharacter', 0),
+            this.characterViews[0].setStartPosition(this.grid.getTile(1, 1));
+            this.characterViews[1].setStartPosition(this.grid.getTile(3, 2));
             
             // set up additional models
             this.pathfinder = new Pathfinder(this.grid);
@@ -87,7 +96,7 @@ define([
             this.foreground.height = constants.canvas.HEIGHT;
             
             // set up initial properties
-            this.model.set('selectedTile', this.model.get('characterTurnCharacter').get('currentTile'));
+            this.model.set('selectedTile', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile'));
             
             // set up events
             this.listenTo(this.model, 'change:characterTurnPrimaryAction', this.onCharacterTurnPrimaryActionChange);
@@ -124,8 +133,8 @@ define([
         },
         
         onMoveComplete: function () {
-            this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characterTurnCharacter')));
-            this.model.set('selectedTile', this.model.get('characterTurnCharacter').get('currentTile'));
+            this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
+            this.model.set('selectedTile', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile'));
         },
         
         onFocusedTileChange: function () {
@@ -154,17 +163,17 @@ define([
         
         // TODO: once event handling is refactored: maybe rename to 'moveCharacter'
         onCharacterTurnMoveClick: function () {
-            if (this.model.get('characterTurnCharacter').get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
+            if (this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
                 this.model.set('selectedTile', null);
                 this.model.set('characterTurnPath', []);
-                this.characterView.moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').id], this.onMoveComplete);
+                this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').id], this.onMoveComplete);
             }
         },
         
         // TODO: once event handling is refactored: maybe rename to 'attack'
         onCharacterTurnAttackClick: function () {
             if (this.isTileInAttackRange(this.model.get('focusedTile'))) {
-                this.characterView.attack(this.model.get('focusedTile').occupied);
+                this.characterViews[this.model.get('characterTurnCharacter')].attack(this.model.get('focusedTile').occupied);
                 this.model.set('characterTurnAttackRange', {});
             }
         },
@@ -188,41 +197,43 @@ define([
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
                     //this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
-                    this.model.set('characterTurnAttackRange', this.pathfinder.findEnemies(this.model.get('characterTurnCharacter')));
+                    this.model.set('characterTurnAttackRange', this.pathfinder.findEnemies(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
                     console.log('End turn');
-                    this.characterView.reset();
+                    this.characterViews[this.model.get('characterTurnCharacter')].reset();
                     this.model.resetCharacterTurn();
                     // TODO: makes this a function that is "chooseNextCharacter" or "switchCharacters" or something
-                    if (this.model.get('characters').indexOf(this.model.get('characterTurnCharacter')) < this.model.get('characters').length - 1) {
-                        this.model.set('characterTurnCharacter', this.model.get('characters').at(this.model.get('characters').indexOf(this.model.get('characterTurnCharacter')) + 1));
+                    if (this.model.get('characterTurnCharacter') < this.model.get('characters').length - 1) {
+                        this.model.set('characterTurnCharacter', this.model.get('characterTurnCharacter') + 1);
                     }
                     else {
-                        this.model.set('characterTurnCharacter', this.model.get('characters').at(0));
+                        this.model.set('characterTurnCharacter', 0);
                     }
-                    this.model.set('selectedTile', this.model.get('characterTurnCharacter').get('currentTile'));
-                    this.characterView.switchCharacters(this.model.get('characterTurnCharacter'));
+                    this.model.set('selectedTile', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile'));
+                    this.characterViews[this.model.get('characterTurnCharacter')].switchCharacters(this.model.get('characters').at(this.model.get('characterTurnCharacter')));
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
                     console.log('Move');
                     // TODO: do the same here, refactor so that always listening, but do nothing when in certain modes
                     this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
-                    this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characterTurnCharacter')));
+                    this.model.set('characterTurnMovementRange', this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.TACTIC:
                     console.log('Tactic');
-                    this.characterView.tactic();
+                    this.characterViews[this.model.get('characterTurnCharacter')].tactic();
                     break;
                 case constants.characterTurn.primaryAction.WAIT:
                     console.log('Wait');
-                    this.characterView.wait();
+                    this.characterViews[this.model.get('characterTurnCharacter')].wait();
                     break;
             }
         },
 
         update: function (deltaFrameTime) {
-            
+            for (var i = 0; i < this.characterViews.length; i++) {
+                this.characterViews[i].render();
+            }
         },
         
         drawTile: function (tile, canvasCtx, indentValue) {
@@ -234,55 +245,10 @@ define([
         },
         
         renderCharacter: function (canvasCtx) {
-            this.model.get('characters').forEach(function (e, i) {
-                
-                // character canvas
-                var characterCanvas = document.createElement('canvas');
-                characterCanvas.width = constants.grid.TILE_SIZE;
-                characterCanvas.height = constants.grid.TILE_SIZE;
-                characterCanvasCtx = characterCanvas.getContext('2d');
-                
-                // sprite
-                var spriteWidth = 16;
-                var spriteHeight = 25;
-                characterCanvasCtx.drawImage(e.get('spritesheet'), e.get('spriteX'), e.get('spriteY'), spriteWidth, spriteHeight, constants.grid.TILE_SIZE / 2 - spriteWidth, constants.grid.TILE_SIZE / 2 - spriteHeight, spriteWidth * 2, spriteHeight * 2);
-                
-                // health number
-                characterCanvasCtx.font = "15px Courier";
-                characterCanvasCtx.textAlign = "right";
-                
-                characterCanvasCtx.strokeStyle = 'rgb(0, 0, 0)';
-                characterCanvasCtx.lineWidth = 4;
-                characterCanvasCtx.strokeText(e.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
-                
-                characterCanvasCtx.fillStyle = 'rgb(255, 255, 255)';
-                characterCanvasCtx.fillText(e.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
-                
-                // health bar
-                characterCanvasCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
-                characterCanvasCtx.lineWidth = 1;
-                characterCanvasCtx.beginPath();
-                characterCanvasCtx.rect(3.5, constants.grid.TILE_SIZE - 11.5, constants.grid.TILE_SIZE - 7, 7);
-                characterCanvasCtx.stroke();
-                
-                characterCanvasCtx.fillStyle = 'rgb(0, 0, 0)';
-                characterCanvasCtx.beginPath();
-                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
-                characterCanvasCtx.fill();
-                
-                characterCanvasCtx.fillStyle = 'rgb(0, 255, 0)';
-                characterCanvasCtx.beginPath();
-                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, (constants.grid.TILE_SIZE -9) * e.get('currentHealth') / e.get('maxHealth'), 5);
-                characterCanvasCtx.fill();
-                
-                characterCanvasCtx.strokeStyle = 'rgb(0, 255, 0)';
-                characterCanvasCtx.lineWidth = 1;
-                characterCanvasCtx.beginPath();
-                characterCanvasCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
-                characterCanvasCtx.stroke();
-                
-                canvasCtx.drawImage(characterCanvas, e.get('x'), e.get('y'));
-            });
+            for (var i = 0; i < this.characterViews.length; i++) {
+                var characterView = this.characterViews[i];
+                canvasCtx.drawImage(characterView.el, characterView.model.get('x'), characterView.model.get('y'));
+            }
         },
         
         renderPaths: function (paths, canvasCtx) {

@@ -21,6 +21,8 @@ define([
             spritesheet: document.getElementById('spritesheet'),
             spriteX: 0,
             spriteY: 0,
+            spriteWidth: 0,
+            spriteHeight: 0,
             velocity: 200,
             x: null,
             y: null
