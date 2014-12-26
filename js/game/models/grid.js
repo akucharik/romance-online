@@ -42,7 +42,12 @@ define([
         },
         
         getTile: function (x, y) {
-            return this.get('tiles')[Tile.prototype.buildKey(x, y)];
+            if (typeof x === 'object') {
+                return this.get('tiles')[Tile.prototype.buildKey(x.x, x.y)];
+            }
+            else {
+                return this.get('tiles')[Tile.prototype.buildKey(x, y)];
+            }
         },
         
         getOccupiedTiles: function () {

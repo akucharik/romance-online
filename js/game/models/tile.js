@@ -1,6 +1,8 @@
 define([
+    'jquery',
     'constants'
 ], function(
+    $,
     constants
 ) {
 
@@ -13,9 +15,10 @@ define([
             this.gridY = gridY;
             this.id = this.buildKey(gridX, gridY);
             this.occupied = options.occupied || null;
+            this.renderType = options.renderType || null;
             this.type = options.type || null;
-            this.x = gridX * constants.grid.TILE_SIZE;
-            this.y = gridY * constants.grid.TILE_SIZE;
+            this.x = $.isNumeric(gridX) ? gridX * constants.grid.TILE_SIZE : null;
+            this.y = $.isNumeric(gridY) ? gridY * constants.grid.TILE_SIZE : null;
             
             this.setCost();
         },

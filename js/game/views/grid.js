@@ -58,8 +58,11 @@ define([
             
             var x = Math.floor(backgroundX / constants.grid.TILE_SIZE);
             var y = Math.floor(backgroundY / constants.grid.TILE_SIZE);
-
-            return this.model.getTile(x, y);
+            
+            return {
+                x: x,
+                y: y
+            }
 
             // TODO: only needed for non-square/rectangle tile shapes
             //drawTile(tile, foregroundCtx)

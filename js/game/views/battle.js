@@ -7,10 +7,12 @@ define([
     'models/grid',
     'models/pathfinder',
     'models/stateManager',
+    'models/tile',
     'views/character',
     'views/characterTurn',
     'views/gameUtilities',
-    'views/grid'
+    'views/grid',
+    'views/tile'
 ], function (
     Backbone,
     CharacterCollection,
@@ -20,10 +22,12 @@ define([
     GridModel, 
     Pathfinder,
     StateManagerModel,
+    TileModel,
     CharacterView,
     CharacterTurnView,
     GameUtilitiesView,
-    GridView
+    GridView,
+    TileView
 ) {
 
 	var BattleView = Backbone.View.extend({
@@ -45,6 +49,18 @@ define([
             this.gridView = new GridView({
                 model: this.grid,
                 el: '#background'
+            });
+            
+            this.focusedTile = new TileModel(null, null, { renderType: constants.tile.renderType.FOCUSED });
+            this.focusedTileView = new TileView({
+                model: this.focusedTile,
+                tagName: 'canvas'
+            });
+            
+            this.selectedTile = new TileModel(null, null, { renderType: constants.tile.renderType.SELECTED });
+            this.selectedTileView = new TileView({
+                model: this.selectedTile,
+                tagName: 'canvas'
             });
             
             // set up characters
@@ -101,7 +117,7 @@ define([
             // set up events
             this.listenTo(this.model, 'change:characterTurnPrimaryAction', this.onCharacterTurnPrimaryActionChange);
             this.listenTo(this.model, 'change:characterTurnCharacter', this.onTurnChange);
-            this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
+            this.listenTo(this.model, 'change:focusedTileGridCoordinates', this.onFocusedTileChange);
             
             // start rendering engine
             window.requestAnimationFrame(this.buildFrame);
@@ -119,24 +135,30 @@ define([
         },
         
         onFocusedTileChange: function () {
+            this.focusedTile.gridX = this.model.get('focusedTileGridCoordinates').x;
+            this.focusedTile.gridY = this.model.get('focusedTileGridCoordinates').y;
+            this.focusedTile.x = this.focusedTile.gridX * constants.grid.TILE_SIZE;
+            this.focusedTile.y = this.focusedTile.gridY * constants.grid.TILE_SIZE;
+            
             if (this.model.get('characterTurnPrimaryAction') === constants.characterTurn.primaryAction.MOVE) {
-                var focusedTile = this.model.get('focusedTile');
-                if (!focusedTile || !this.pathfinder.isTileInRange(focusedTile)) {
+                var currentTile = this.grid.getTile(this.model.get('focusedTileGridCoordinates'));
+                if (!currentTile || !this.pathfinder.isTileInRange(currentTile)) {
                     this.model.set('characterTurnPath', []);
                 }
-                else if (focusedTile.isMoveable()) {
-                    this.model.set('characterTurnPath', this.pathfinder.nodesInRange[focusedTile.id].path);
+                else if (currentTile.isMoveable()) {
+                    this.model.set('characterTurnPath', this.pathfinder.nodesInRange[currentTile.id].path);
                 }
             }
         },
         
         onMouseMove: function (event) {
-            this.model.set('focusedTile', this.gridView.hitTest(event, this.foreground));
+            this.model.set('focusedTileGridCoordinates', this.gridView.hitTest(event, this.foreground));
+            //this.model.set('focusedTile', this.gridView.hitTest(event, this.foreground));
         },
         
         onMouseLeave: function (event) {
             // removes mousemove triggered visuals when mouse is not over canvas
-            this.model.set('focusedTile', null);
+            this.model.set('focusedTileGridCoordinates', { x: null, y: null });
             this.model.set('characterTurnPath', []);
         },
         
@@ -147,14 +169,14 @@ define([
         onClick: function () {
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    if (this.isTileInAttackRange(this.model.get('focusedTile'))) {
+                    if (this.isTileInAttackRange(this.grid.getTile(this.model.get('focusedTileGridCoordinates')))) {
                         this.attack();
                     }
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
-                    if (this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
+                    if (this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('movementRange') > 0 && this.pathfinder.isTileInRange(this.grid.getTile(this.model.get('focusedTileGridCoordinates')))) {
                         this.moveCharacter();
                     }
                     break;
@@ -168,11 +190,11 @@ define([
         moveCharacter: function () {
             this.model.set('selectedTile', null);
             this.model.set('characterTurnPath', []);
-            this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').id], this.onMoveComplete);
+            this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.grid.getTile(this.model.get('focusedTileGridCoordinates')).id], this.onMoveComplete);
         },
         
         attack: function () {
-            this.characterViews[this.model.get('characterTurnCharacter')].attack(this.model.get('focusedTile').occupied);
+            this.characterViews[this.model.get('characterTurnCharacter')].attack(this.grid.getTile(this.model.get('focusedTileGridCoordinates')).occupied);
             this.model.set('characterTurnAttackRange', {});
         },
         
@@ -223,9 +245,7 @@ define([
         },
 
         update: function (deltaFrameTime) {
-            for (var i = 0; i < this.characterViews.length; i++) {
-                this.characterViews[i].render();
-            }
+            
         },
         
         drawTile: function (tile, canvasCtx, indentValue) {
@@ -237,8 +257,11 @@ define([
         },
         
         renderCharacter: function (canvasCtx) {
+            var characterView = null;
+            
             for (var i = 0; i < this.characterViews.length; i++) {
-                var characterView = this.characterViews[i];
+                characterView = this.characterViews[i];
+                characterView.render();
                 canvasCtx.drawImage(characterView.el, characterView.model.get('x'), characterView.model.get('y'));
             }
         },
@@ -266,18 +289,9 @@ define([
         // Create a single function that takes (tile, tileDisplayObject or possibly an array of 2 objects, canvasCtx)
         // this "display object" can be a constant itself
         // Separate all this into the Tile view
-        renderFocusedTile: function (tile, canvasCtx) {
-            if (tile !== null && tile !== undefined) {
-                canvasCtx.strokeStyle = constants.grid.FOCUSED_BORDER_FILL_STYLE;
-                canvasCtx.lineWidth = constants.grid.FOCUSED_BORDER_WIDTH;
-                this.drawTile(tile, canvasCtx, constants.grid.FOCUSED_INDENT);
-                canvasCtx.stroke();
-                
-                canvasCtx.strokeStyle = constants.grid.FOCUSED_OUTER_BORDER_FILL_STYLE;
-                canvasCtx.lineWidth = constants.grid.FOCUSED_OUTER_BORDER_WIDTH;
-                this.drawTile(tile, canvasCtx, constants.grid.FOCUSED_OUTER_BORDER_INDENT);
-                canvasCtx.stroke();
-            }
+        renderFocusedTile: function (canvasCtx) {
+            this.focusedTileView.render();
+            canvasCtx.drawImage(this.focusedTileView.el, this.focusedTile.x, this.focusedTile.y);
         },
         
         renderMovement: function (tiles, canvasCtx) {
@@ -315,7 +329,7 @@ define([
             this.renderMovement(this.model.get('characterTurnMovementRange'), this.foregroundCtx);
             this.renderMovement(this.model.get('characterTurnAttackRange'), this.foregroundCtx);
             this.renderPaths([this.model.get('characterTurnPath')], this.foregroundCtx);
-            this.renderFocusedTile(this.model.get('focusedTile'), this.foregroundCtx);
+            this.renderFocusedTile(this.foregroundCtx);
             this.renderCharacter(this.foregroundCtx);
             
             return this;

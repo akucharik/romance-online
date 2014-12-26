@@ -20,7 +20,8 @@ define([
             
             // tiles
             focusedTile: null,
-            selectedTile: null
+            focusedTileGridCoordinates: null,
+            selectedTile: null,
 		},
         
         // TODO: put this in the view, NOT the model

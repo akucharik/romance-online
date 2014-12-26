@@ -63,6 +63,11 @@ define(function() {
                 BASE: 1,
                 OBSTACLE: 2,
                 TREE: 3
+            },
+            renderType: {
+                FOCUSED: 1,
+                MAP: 2,
+                SELECTED: 3
             }
         },
         
