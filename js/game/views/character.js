@@ -166,18 +166,18 @@ define([
         
         onCurrentTileChange: function () {
             if (this.model.previous('currentTile') !== null) {
-                this.model.previous('currentTile').occupied = null;
+                this.model.previous('currentTile').set('occupied', null);
             }
-            this.model.get('currentTile').occupied = this.model;
+            this.model.get('currentTile').set('occupied', this.model);
 
             return this.model.get('currentTile');
         },
         
         setStartPosition: function (tile) {
             this.model.set('currentTile', tile);
-            this.model.set('x', this.model.get('currentTile').x);
-            this.model.set('y', this.model.get('currentTile').y);
-            this.parent.grid.get('tiles')[tile.id].occupied = this.model;
+            this.model.set('x', this.model.get('currentTile').get('x'));
+            this.model.set('y', this.model.get('currentTile').get('y'));
+            this.parent.grid.get('tiles')[tile.get('id')].set('occupied', this.model);
         },
         
         updateAttribute: function(attribute, change) {

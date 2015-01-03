@@ -17,35 +17,12 @@ define([
 		},
         
         render: function () {   
-            for (var i in this.model.get('tiles')) {
-                this.drawTile(this.model.get('tiles')[i]);
-                this.elCtx.fillStyle = this.getFillStyle(this.model.get('tiles')[i].type);
-                this.elCtx.fill();
-                
-                this.elCtx.fillStyle = 'rgba(0, 0, 0, 1.0)';
-                this.elCtx.font = "10px Arial";
-                this.elCtx.fillText(i, this.model.get('tiles')[i].x + 6 , this.model.get('tiles')[i].y + 15);
+            for (var i = 0; i < this.model.get('tileViews').length; i++) {
+                var mapTileView = this.model.get('tileViews')[i];
+                this.elCtx.drawImage(mapTileView.el, mapTileView.model.get('x'), mapTileView.model.get('y'));
             }
             
             return this;
-        },
-        
-        drawTile: function (tile) {
-            if (tile !== undefined && tile !== null) {
-                this.elCtx.beginPath();
-                this.elCtx.rect(tile.x, tile.y, constants.grid.TILE_SIZE, constants.grid.TILE_SIZE);
-            }
-        },
-        
-        getFillStyle: function (type) {
-            switch (type) {
-                case constants.tile.type.OBSTACLE:
-                    return 'rgba(100, 100, 100, 1.0)';
-                case constants.tile.type.TREE:
-                    return 'rgba(50, 150, 50, 1.0)';
-                default:
-                    return 'rgba(100, 200, 100, 1.0)';
-            }
         },
         
         hitTest: function (mouseObj, canvas) {		
@@ -59,10 +36,7 @@ define([
             var x = Math.floor(backgroundX / constants.grid.TILE_SIZE);
             var y = Math.floor(backgroundY / constants.grid.TILE_SIZE);
             
-            return {
-                x: x,
-                y: y
-            }
+            return this.model.getTile(x, y);
 
             // TODO: only needed for non-square/rectangle tile shapes
             //drawTile(tile, foregroundCtx)

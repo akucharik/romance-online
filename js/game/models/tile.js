@@ -1,24 +1,34 @@
 define([
+    'backbone',
     'jquery',
     'constants'
 ], function(
+    Backbone,
     $,
     constants
 ) {
 
-    var Tile = Class.extend({
-        init: function (gridX, gridY, options) {
+    var Tile = Backbone.Model.extend({
+		defaults: {
+            cost: 0,
+            gridX: null,
+            gridY: null,
+            id: null,
+            occupied: null,
+            type: null,
+            x: null,
+            y: null,
+		},
+
+        initialize: function (options) {
             options = options || {};
 
-            this.cost = null;
-            this.gridX = gridX;
-            this.gridY = gridY;
-            this.id = this.buildKey(gridX, gridY);
-            this.occupied = options.occupied || null;
-            this.renderType = options.renderType || null;
-            this.type = options.type || null;
-            this.x = $.isNumeric(gridX) ? gridX * constants.grid.TILE_SIZE : null;
-            this.y = $.isNumeric(gridY) ? gridY * constants.grid.TILE_SIZE : null;
+            this.set('gridX', $.isNumeric(options.gridX) ? options.gridX : null);
+            this.set('gridY', $.isNumeric(options.gridY) ? options.gridY : null);
+            this.setPosition();
+            this.setId();
+            this.set('occupied', options.occupied || null);
+            this.set('type', options.type || null);
             
             this.setCost();
         },
@@ -28,7 +38,7 @@ define([
         },
         
         isEqual: function (tile) {
-            if (this.gridX === tile.gridX && this.gridY === tile.gridY) {
+            if (this.get('gridX') === tile.get('gridX') && this.get('gridY') === tile.get('gridY')) {
                 return true;
             } else {
                 return false;
@@ -36,7 +46,7 @@ define([
         },
         
         isMoveable: function () {
-            if (this.occupied === null && this.type !== constants.tile.type.OBSTACLE ) {
+            if (this.get('occupied') === null && this.get('type') !== constants.tile.type.OBSTACLE) {
                 return true;
             }
             else {
@@ -44,16 +54,36 @@ define([
             }
         },
         
+        setId: function () {
+            if ($.isNumeric(this.get('gridX')) && $.isNumeric(this.get('gridY'))) {
+                this.set('id', this.buildKey(this.get('gridX'), this.get('gridY')));
+            }
+            else {
+                this.set('id', null);
+            }
+        },
+        
+        setPosition: function () {
+            if ($.isNumeric(this.get('gridX')) && $.isNumeric(this.get('gridY'))) {
+                this.set('x', this.get('gridX') * constants.grid.TILE_SIZE);
+                this.set('y', this.get('gridY') * constants.grid.TILE_SIZE);
+            }
+            else {
+                this.set('x', null);
+                this.set('y', null);
+            }
+        },
+        
         setCost: function () {
-            switch (this.type) {
+            switch (this.get('type')) {
                 case constants.tile.type.OBSTACLE:
-                    this.cost = constants.tile.cost.OBSTACLE;
+                    this.set('cost', constants.tile.cost.OBSTACLE);
                     break;
                 case constants.tile.type.TREE:
-                    this.cost = constants.tile.cost.TREE;
+                    this.set('cost', constants.tile.cost.TREE);
                     break;
                 default:
-                    this.cost = constants.tile.cost.BASE;
+                    this.set('cost', constants.tile.cost.BASE);
             }
         }
         

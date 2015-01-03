@@ -1,7 +1,9 @@
 define([
-	'backbone'
+	'backbone',
+    'models/tile'
 ], function(
-    Backbone
+    Backbone,
+    TileModel
 ) {
     
 	var BattleModel = Backbone.Model.extend({
@@ -13,21 +15,20 @@ define([
             
             // character turn
             characterTurnCharacter: null,
-            characterTurnMovementRange: null,
+            characterTurnMovementRange: new Backbone.Collection,
             characterTurnPath: [],
             characterTurnPrimaryAction: null,
             characterTurnAttackRange: null,
             
             // tiles
-            focusedTile: null,
-            focusedTileGridCoordinates: null,
-            selectedTile: null,
+            focusedTile: new TileModel(),
+            selectedTile: new TileModel()
 		},
         
         // TODO: put this in the view, NOT the model
         resetCharacterTurn: function () {
             this.set('characterTurnPrimaryAction', null);
-            this.set('characterTurnMovementRange', null);
+            this.get('characterTurnMovementRange').reset();
         }
         
 	});

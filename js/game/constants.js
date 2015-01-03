@@ -64,10 +64,10 @@ define(function() {
                 OBSTACLE: 2,
                 TREE: 3
             },
-            renderType: {
-                FOCUSED: 1,
-                MAP: 2,
-                SELECTED: 3
+            fillStyle: {
+                BASE: 'rgba(100, 200, 100, 1.0)',
+                OBSTACLE: 'rgba(100, 100, 100, 1.0)',
+                TREE: 'rgba(50, 150, 50, 1.0)'
             }
         },
         

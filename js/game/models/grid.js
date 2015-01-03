@@ -1,16 +1,19 @@
 define([
 	'backbone',
     'constants',
-    'models/tile'
+    'models/tile',
+    'views/mapTile'
 ], function(
     Backbone, 
     constants,
-    Tile
+    Tile,
+    MapTileView
 ) {
     
 	var Grid = Backbone.Model.extend({
 		defaults: {
             tiles: {},
+            tileViews: [],
             width: (constants.canvas.WIDTH - (constants.canvas.WIDTH % constants.grid.TILE_SIZE)) / constants.grid.TILE_SIZE,
             height: (constants.canvas.HEIGHT - (constants.canvas.HEIGHT % constants.grid.TILE_SIZE)) / constants.grid.TILE_SIZE
 		},
@@ -20,11 +23,17 @@ define([
                 for (var x = 0; x < this.get('width'); x++) {
                     // TODO: temporarily create different tile types
                     var options = {
-                        occupied: null,
+                        gridX: x,
+                        gridY: y,
                         type: this.getTileType(x) //x % (Math.random() * 10) > 5 ? constants.tile.type.obstacle : constants.tile.type.normal
                     }
-                    var newTile = new Tile(x, y, options);
+                    var newTile = new Tile(options);
                     this.get('tiles')[Tile.prototype.buildKey(x, y)] = newTile;
+                    var newTileView = new MapTileView({
+                        model: newTile,
+                        tagName: 'canvas'
+                    });
+                    this.get('tileViews').push(newTileView);
                 }
             }
         },
@@ -44,6 +53,9 @@ define([
         getTile: function (x, y) {
             if (typeof x === 'object') {
                 return this.get('tiles')[Tile.prototype.buildKey(x.x, x.y)];
+            }
+            else if (typeof x === 'string') {
+                return this.get('tiles')[x];
             }
             else {
                 return this.get('tiles')[Tile.prototype.buildKey(x, y)];

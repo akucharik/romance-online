@@ -11,27 +11,27 @@ define([
         },
         
         getNeighborNodes: function (node) {
-            var north = node.gridY - 1,
-                south = node.gridY + 1,
-                east = node.gridX + 1,
-                west = node.gridX - 1,
+            var north = node.get('gridY') - 1,
+                south = node.get('gridY') + 1,
+                east = node.get('gridX') + 1,
+                west = node.get('gridX') - 1,
                 neighbors = [];
 
             // north
             if (north >= 0) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.gridX, north)]);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.get('gridX'), north)]);
             }
             // south
             if (south < this.grid.get('height')) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.gridX, south)]);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.get('gridX'), south)]);
             }
             // east
             if (east < this.grid.get('width')) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(east, node.gridY)]);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(east, node.get('gridY'))]);
             }
             // west
             if (west >= 0) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(west, node.gridY)]);
+                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(west, node.get('gridY'))]);
             }
 
             return neighbors;
@@ -44,18 +44,18 @@ define([
                 var currentNeighbor = neighbors[i];
 
                 // TODO: consider creating a function like "shouldBeVisited"
-                if (currentNeighbor.id !== data.startNode.id && this.grid.get('tiles')[currentNeighbor.id].isMoveable()) {
+                if (currentNeighbor.get('id') !== data.startNode.get('id') && this.grid.get('tiles')[currentNeighbor.get('id')].isMoveable()) {
                     // visit a new node
-                    if (!data.nodes[currentNeighbor.id]) {
+                    if (!data.nodes[currentNeighbor.get('id')]) {
                         var newNode = _.clone(currentNeighbor);
 
                         // TODO: consider refactoring this to have a single function call for this and lines 68-70
                         newNode.path = node.path.slice();
                         newNode.path.push(currentNeighbor);
-                        newNode.pathCost = node.pathCost + currentNeighbor.cost;
+                        newNode.pathCost = node.pathCost + currentNeighbor.get('cost');
 
                         if (newNode.pathCost <= data.maxPathCost) {
-                            data.nodes[newNode.id] = newNode;
+                            data.nodes[newNode.get('id')] = newNode;
                         }
                         if (newNode.pathCost < data.maxPathCost) {
                             this.visitNode(newNode, data);
@@ -64,13 +64,13 @@ define([
                     // visit an already visited node and assess
                     else {
                         // TODO: consider creating a function like "isAlreadyVisitedAndShouldBeRevisited"
-                        if (node.pathCost + currentNeighbor.cost <= data.nodes[currentNeighbor.id].pathCost &&
-                            node.path.length < data.nodes[currentNeighbor.id].path.length) {
+                        if (node.pathCost + currentNeighbor.get('cost') <= data.nodes[currentNeighbor.get('id')].pathCost &&
+                            node.path.length < data.nodes[currentNeighbor.get('id')].path.length) {
 
-                            data.nodes[currentNeighbor.id].pathCost = node.pathCost + currentNeighbor.cost;
-                            data.nodes[currentNeighbor.id].path = node.path.slice();
-                            data.nodes[currentNeighbor.id].path.push(currentNeighbor);
-                            this.visitNode(data.nodes[currentNeighbor.id], data);
+                            data.nodes[currentNeighbor.get('id')].pathCost = node.pathCost + currentNeighbor.get('cost');
+                            data.nodes[currentNeighbor.get('id')].path = node.path.slice();
+                            data.nodes[currentNeighbor.get('id')].path.push(currentNeighbor);
+                            this.visitNode(data.nodes[currentNeighbor.get('id')], data);
                         }
                     }
                 }
@@ -95,7 +95,13 @@ define([
             result = this.visitNode(startNode, data);
             this.nodesInRange = result;
             
-            return result;
+            // TODO: temporarily convert nodes to exact tile objects
+            var tiles = {};
+            for (node in result) {
+                tiles[node] = this.grid.getTile(result[node].get('id'));;
+            }
+            
+            return tiles;
         },
         
         isTileInRange: function (tile) {
