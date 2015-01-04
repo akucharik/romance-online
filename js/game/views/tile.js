@@ -41,6 +41,7 @@ define([
         onGridPositionChange: function () {
             this.model.setPosition();
             this.model.setId();
+            this.render();
         }
         
 	});

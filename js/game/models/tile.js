@@ -63,6 +63,11 @@ define([
             }
         },
         
+        setGridPosition: function (x, y) {
+            this.set('gridX', x);
+            this.set('gridY', y);
+        },
+        
         setPosition: function () {
             if ($.isNumeric(this.get('gridX')) && $.isNumeric(this.get('gridY'))) {
                 this.set('x', this.get('gridX') * constants.grid.TILE_SIZE);

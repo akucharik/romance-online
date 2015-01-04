@@ -54,7 +54,7 @@ define([
             this.grid = new GridModel();
             this.gridView = new GridView({
                 model: this.grid,
-                el: '#background'
+                tagName: 'canvas'
             });
             
             this.focusedTileView = new FocusedTileView({
@@ -113,6 +113,14 @@ define([
                 el: '#characterActionsMenu'
             });
             
+            // set up background
+            this.background = document.querySelector('#background');
+            this.$background = $(this.background);
+            this.backgroundCtx = this.background.getContext('2d');
+            this.background.width = constants.canvas.WIDTH;
+            this.background.height = constants.canvas.HEIGHT;
+            this.backgroundCtx.drawImage(this.gridView.el, 0, 0);
+            
             // set up foreground
             this.foreground = document.querySelector('#foreground');
             this.$foreground = $(this.foreground);
@@ -121,11 +129,10 @@ define([
             this.foreground.height = constants.canvas.HEIGHT;
             
             // set up initial properties
-            // TODO: setting gridX and gridY of selected tile is almost exactly like focused tile.
-            // TODO: either handle it differently or consolidate code.
-            // TODO: perhaps have a function that sets both x and y at the same time.
-            this.model.get('selectedTile').set('gridX', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'));
-            this.model.get('selectedTile').set('gridY', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY'));
+            this.model.get('selectedTile').setGridPosition(
+                this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'),
+                this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY')
+            );
             
             // set up events
             this.listenTo(this.model, 'change:characterTurnPrimaryAction', this.onCharacterTurnPrimaryActionChange);
@@ -154,11 +161,10 @@ define([
                 paths.push(pathsObj[tile]);
             }
             this.model.get('characterTurnMovementRange').reset(paths);
-            // TODO: setting gridX and gridY of selected tile is almost exactly like focused tile.
-            // TODO: either handle it differently or consolidate code.
-            // TODO: perhaps have a function that sets both x and y at the same time.
-            this.model.get('selectedTile').set('gridX', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'));
-            this.model.get('selectedTile').set('gridY', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY'));
+            this.model.get('selectedTile').setGridPosition(
+                this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'),
+                this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY')
+            );
         },
         
         onFocusedTileChange: function () {
@@ -174,21 +180,13 @@ define([
         },
         
         onMouseMove: function (event) {
-            var currentTile = this.gridView.hitTest(event, this.foreground);
-            // TODO: setting gridX and gridY of selected tile is almost exactly like focused tile.
-            // TODO: either handle it differently or consolidate code.
-            // TODO: perhaps have a function that sets both x and y at the same time.
-            this.model.get('focusedTile').set('gridX', currentTile.get('gridX'));
-            this.model.get('focusedTile').set('gridY', currentTile.get('gridY'));
+            var currentTile = this.determineFocusedTile(event);
+            this.model.get('focusedTile').setGridPosition(currentTile.get('gridX'), currentTile.get('gridY'));
         },
         
         onMouseLeave: function (event) {
             // removes mousemove triggered visuals when mouse is not over canvas
-            // TODO: setting gridX and gridY of selected tile is almost exactly like focused tile.
-            // TODO: either handle it differently or consolidate code.
-            // TODO: perhaps have a function that sets both x and y at the same time.
-            this.model.get('focusedTile').set('gridX', null);
-            this.model.get('focusedTile').set('gridY', null);
+            this.model.get('focusedTile').setGridPosition(null, null);
             this.model.set('characterTurnPath', []);
         },
         
@@ -206,6 +204,7 @@ define([
                 case constants.characterTurn.primaryAction.END_TURN:
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
+                    
                     if (this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
                         this.moveCharacter();
                     }
@@ -217,13 +216,33 @@ define([
             }
         },
         
+        determineFocusedTile: function (mouseObj) {		
+            var backgroundX = mouseObj.pageX - $(this.foreground).offset().left;
+            var backgroundY = mouseObj.pageY - $(this.foreground).offset().top;
+            
+            // handle sub-pixel centering of game if it happens
+            backgroundX = (backgroundX < 0) ? 0 : backgroundX;
+            backgroundX = (backgroundX > constants.canvas.WIDTH) ? constants.canvas.WIDTH : backgroundX;
+            
+            var x = Math.floor(backgroundX / constants.grid.TILE_SIZE);
+            var y = Math.floor(backgroundY / constants.grid.TILE_SIZE);
+            
+            return this.grid.getTile(x, y);
+
+            // TODO: only needed for non-square/rectangle tile shapes
+            //drawTile(tile, foregroundCtx)
+            //if(foregroundCtx.isPointInPath(backgroundX, backgroundY)) {
+            //	return tile;
+            //}
+            //else {
+            //	return null;	
+            //}
+        },
+        
         moveCharacter: function () {
-            // TODO: setting gridX and gridY of selected tile is almost exactly like focused tile.
-            // TODO: either handle it differently or consolidate code.
-            this.model.get('selectedTile').set('gridX', null);
-            this.model.get('selectedTile').set('gridY', null);
+            this.model.get('selectedTile').setGridPosition(null, null);
             this.model.set('characterTurnPath', []);
-            this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile')], this.onMoveComplete);
+            this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').get('id')], this.onMoveComplete);
         },
         
         attack: function () {
@@ -259,10 +278,10 @@ define([
                     else {
                         this.model.set('characterTurnCharacter', 0);
                     }
-                    // TODO: setting gridX and gridY of selected tile is almost exactly like focused tile.
-                    // TODO: either handle it differently or consolidate code.
-                    this.model.get('selectedTile').set('gridX', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'));
-                    this.model.get('selectedTile').set('gridY', this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY'));
+                    this.model.get('selectedTile').setGridPosition(
+                        this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'),
+                        this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY')
+                    );
                     this.characterViews[this.model.get('characterTurnCharacter')].switchCharacters(this.model.get('characters').at(this.model.get('characterTurnCharacter')));
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
@@ -319,25 +338,30 @@ define([
             };
         },
 
-        render: function () {
-            this.foregroundCtx.clearRect(0, 0, constants.canvas.WIDTH, constants.canvas.HEIGHT);
-            //this.renderPaths([this.model.get('characterTurnPath')], this.foregroundCtx);
+        renderForeground: function (ctx) {
+            // clear canvas
+            ctx.clearRect(0, 0, constants.canvas.WIDTH, constants.canvas.HEIGHT);
             
-            // render character movement tiles
-            this.foregroundCtx.drawImage(this.movementTilesView.el, 0, 0);
+            // character path tiles
+            //this.renderPaths([this.model.get('characterTurnPath')], ctx);
             
-            // render selected tile
-            this.foregroundCtx.drawImage(this.selectedTileView.render().el, this.model.get('selectedTile').get('x'), this.model.get('selectedTile').get('y'));
+            // character movement tiles
+            ctx.drawImage(this.movementTilesView.el, 0, 0);
             
-            // render focused tile
-            this.foregroundCtx.drawImage(this.focusedTileView.render().el, this.model.get('focusedTile').get('x'), this.model.get('focusedTile').get('y'));
+            // character attack tiles
+            //ctx.drawImage(this.attackTilesView.el, 0, 0);
             
-            // render characters
+            // selected tile
+            ctx.drawImage(this.selectedTileView.el, this.model.get('selectedTile').get('x'), this.model.get('selectedTile').get('y'));
+            
+            // focused tile
+            ctx.drawImage(this.focusedTileView.el, this.model.get('focusedTile').get('x'), this.model.get('focusedTile').get('y'));
+            
+            // characters
             var characterView = null;
-            
             for (var i = 0; i < this.characterViews.length; i++) {
                 characterView = this.characterViews[i];
-                this.foregroundCtx.drawImage(characterView.render().el, characterView.model.get('x'), characterView.model.get('y'));
+                ctx.drawImage(characterView.render().el, characterView.model.get('x'), characterView.model.get('y'));
             }
             
             return this;
@@ -349,7 +373,7 @@ define([
             this.gameUtilities.time.set('deltaFrameTime', this.gameUtilitiesView.gameTime.calculateDeltaFrameTime());
             this.gameUtilities.time.set('gameTime', this.gameUtilities.time.get('gameTime') + this.gameUtilities.time.get('deltaFrameTime'));
             this.update(this.gameUtilities.time.get('deltaFrameTime'));
-            this.render();
+            this.renderForeground(this.foregroundCtx);
             window.requestAnimationFrame(this.buildFrame);
         }
         
