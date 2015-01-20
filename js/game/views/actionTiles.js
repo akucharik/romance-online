@@ -28,6 +28,7 @@ define([
         
         render: function () {
             if (this.collection.length > 0) {
+                //console.log('draw action tiles');
                 this.collection.each(function (tile) {
                     var actionTileView = new ActionTileView({
                         model: tile,

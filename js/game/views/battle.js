@@ -155,12 +155,7 @@ define([
         },
         
         onMoveComplete: function () {
-            var pathsObj = this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter')));
-            var paths = [];
-            for (var tile in pathsObj) {
-                paths.push(pathsObj[tile]);
-            }
-            this.model.get('characterTurnMovementRange').reset(paths);
+            this.model.get('characterTurnMovementRange').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
             this.model.get('selectedTile').setGridPosition(
                 this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'),
                 this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY')
@@ -286,14 +281,7 @@ define([
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
                     console.log('Move');
-                    // TODO: had to convert object of tile to array of tile to populate collection.
-                    // TODO: it should be returned as an array from the pathfinder instead
-                    var pathsObj = this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter')));
-                    var paths = [];
-                    for (var tile in pathsObj) {
-                        paths.push(pathsObj[tile]);
-                    }
-                    this.model.get('characterTurnMovementRange').reset(paths);
+                    this.model.get('characterTurnMovementRange').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.TACTIC:
                     console.log('Tactic');

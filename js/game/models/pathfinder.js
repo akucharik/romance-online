@@ -1,6 +1,10 @@
 define([
+    'backbone',
+    'models/node',
     'models/tile'
 ], function(
+    Backbone,
+    Node,
     Tile
 ) {
     
@@ -10,67 +14,114 @@ define([
             this.nodesInRange = {}
         },
         
+        convertNodesToTiles: function (nodes) {
+            var tiles = [];
+            
+            for (var node in nodes) {
+                tiles.push(this.grid.get('tiles')[nodes[node].get('id')]);
+            }
+            
+            return tiles;
+        },
+        
         getNeighborNodes: function (node) {
             var north = node.get('gridY') - 1,
                 south = node.get('gridY') + 1,
                 east = node.get('gridX') + 1,
                 west = node.get('gridX') - 1,
+                gridX = null,
+                gridY = null,
                 neighbors = [];
 
             // north
             if (north >= 0) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.get('gridX'), north)]);
+                gridX = node.get('gridX');
+                gridY = north;
+                neighbors.push(new Node({
+                    gridX: gridX, 
+                    gridY: gridY,
+                    cost: this.grid.get('tiles')[Tile.prototype.buildKey(gridX, gridY)].get('cost')
+                }));
             }
             // south
             if (south < this.grid.get('height')) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(node.get('gridX'), south)]);
+                gridX = node.get('gridX');
+                gridY = south;
+                neighbors.push(new Node({
+                    gridX: gridX, 
+                    gridY: gridY,
+                    cost: this.grid.get('tiles')[Tile.prototype.buildKey(gridX, gridY)].get('cost')
+                }));
             }
             // east
             if (east < this.grid.get('width')) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(east, node.get('gridY'))]);
+                gridX = east;
+                gridY = node.get('gridY');
+                neighbors.push(new Node({
+                    gridX: gridX, 
+                    gridY: gridY,
+                    cost: this.grid.get('tiles')[Tile.prototype.buildKey(gridX, gridY)].get('cost')
+                }));
             }
             // west
             if (west >= 0) {
-                neighbors.push(this.grid.get('tiles')[Tile.prototype.buildKey(west, node.get('gridY'))]);
+                gridX = west;
+                gridY = node.get('gridY');
+                neighbors.push(new Node({
+                    gridX: gridX, 
+                    gridY: gridY,
+                    cost: this.grid.get('tiles')[Tile.prototype.buildKey(gridX, gridY)].get('cost')
+                }));
             }
 
             return neighbors;
         },
         
+        nodeShouldBeVisited: function (neighbor, data) {
+            return neighbor.get('id') !== data.startNode.get('id') && this.grid.get('tiles')[neighbor.get('id')].isMoveable();
+        },
+        
+        nodeShouldBeRevisited: function (neighbor, node, data) {
+            return node.get('pathCost') + neighbor.get('cost') <= data.nodes[neighbor.get('id')].get('pathCost') &&
+                   node.get('path').length < data.nodes[neighbor.get('id')].get('path').length;
+        },
+        
         visitNode: function (node, data) {
             var neighbors = this.getNeighborNodes(node);
+            var neighbor = null;
+            var newNode = null;
+            var existingNode = null;
             
             for (var i = 0; i < neighbors.length; i++) {
-                var currentNeighbor = neighbors[i];
-
-                // TODO: consider creating a function like "shouldBeVisited"
-                if (currentNeighbor.get('id') !== data.startNode.get('id') && this.grid.get('tiles')[currentNeighbor.get('id')].isMoveable()) {
+                neighbor = neighbors[i];
+                
+                if (this.nodeShouldBeVisited(neighbor, data)) {
                     // visit a new node
-                    if (!data.nodes[currentNeighbor.get('id')]) {
-                        var newNode = _.clone(currentNeighbor);
+                    if (!data.nodes[neighbor.get('id')]) {
+                        newNode = new Node({
+                            gridX: neighbor.get('gridX'),
+                            gridY: neighbor.get('gridY'),
+                            cost: neighbor.get('cost'),
+                            path: node.get('path').slice(),
+                            pathCost: node.get('pathCost') + neighbor.get('cost')
+                        });
+                        
+                        newNode.get('path').push(neighbor);
 
-                        // TODO: consider refactoring this to have a single function call for this and lines 68-70
-                        newNode.path = node.path.slice();
-                        newNode.path.push(currentNeighbor);
-                        newNode.pathCost = node.pathCost + currentNeighbor.get('cost');
-
-                        if (newNode.pathCost <= data.maxPathCost) {
+                        if (newNode.get('pathCost') <= data.maxPathCost) {
                             data.nodes[newNode.get('id')] = newNode;
                         }
-                        if (newNode.pathCost < data.maxPathCost) {
+                        if (newNode.get('pathCost') < data.maxPathCost) {
                             this.visitNode(newNode, data);
                         }
                     }
-                    // visit an already visited node and assess
                     else {
-                        // TODO: consider creating a function like "isAlreadyVisitedAndShouldBeRevisited"
-                        if (node.pathCost + currentNeighbor.get('cost') <= data.nodes[currentNeighbor.get('id')].pathCost &&
-                            node.path.length < data.nodes[currentNeighbor.get('id')].path.length) {
-
-                            data.nodes[currentNeighbor.get('id')].pathCost = node.pathCost + currentNeighbor.get('cost');
-                            data.nodes[currentNeighbor.get('id')].path = node.path.slice();
-                            data.nodes[currentNeighbor.get('id')].path.push(currentNeighbor);
-                            this.visitNode(data.nodes[currentNeighbor.get('id')], data);
+                        if (this.nodeShouldBeRevisited(neighbor, node, data)) {
+                            exisitingNode = data.nodes[neighbor.get('id')];
+                            exisitingNode.set('path', node.get('path').slice());
+                            exisitingNode.get('path').push(neighbor);
+                            exisitingNode.set('pathCost', node.get('pathCost') + neighbor.get('cost'));
+                            this.visitNode(exisitingNode, data);
                         }
                     }
                 }
@@ -78,30 +129,19 @@ define([
             return data.nodes;
         },
         
+        // Returns an array of nodes
         findPaths: function (character) {
-            var startNode = _.clone(character.get('currentTile')),
-                data = {},
-                result = {};
-            
-            this.nodesInRange = {};
-            startNode.path = [];
-            startNode.pathCost = 0;
-            data = { 
+            var data = { 
                 maxPathCost: character.get('movementRange'), 
                 nodes: {},
-                startNode: startNode
+                startNode: new Node({
+                    gridX: character.get('currentTile').get('gridX'), 
+                    gridY: character.get('currentTile').get('gridY')
+                })
             };
+            this.nodesInRange = this.visitNode(data.startNode, data);
             
-            result = this.visitNode(startNode, data);
-            this.nodesInRange = result;
-            
-            // TODO: temporarily convert nodes to exact tile objects
-            var tiles = {};
-            for (node in result) {
-                tiles[node] = this.grid.getTile(result[node].get('id'));;
-            }
-            
-            return tiles;
+            return this.convertNodesToTiles(this.nodesInRange);
         },
         
         isTileInRange: function (tile) {
