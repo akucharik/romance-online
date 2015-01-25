@@ -15,8 +15,11 @@ define([
             
             // character turn
             characterTurnCharacter: null,
-            characterTurnMovementRange: new Backbone.Collection,
+            characterTurnMovementNodes: new Backbone.Collection,
+            characterTurnMovementTiles: new Backbone.Collection,
             characterTurnPath: [],
+            characterTurnPathNodes: new Backbone.Collection,
+            characterTurnPathTiles: new Backbone.Collection,
             characterTurnPrimaryAction: null,
             characterTurnAttackRange: null,
             
@@ -28,7 +31,7 @@ define([
         // TODO: put this in the view, NOT the model
         resetCharacterTurn: function () {
             this.set('characterTurnPrimaryAction', null);
-            this.get('characterTurnMovementRange').reset();
+            this.get('characterTurnMovementNodes').reset();
         }
         
 	});

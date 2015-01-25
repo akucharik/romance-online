@@ -2,15 +2,15 @@ define([
 	'backbone',
     'jquery',
     'constants',
-    'views/actionTile'
+    'views/pathTile'
 ], function(
     Backbone,
     $,
     constants,
-    ActionTileView
+    PathTileView
 ) {
 
-	var ActionTilesView = Backbone.View.extend({
+	var PathTilesView = Backbone.View.extend({
 		
 		initialize: function () {
             if (this.tagName !== 'canvas') {
@@ -23,7 +23,7 @@ define([
             this.el.width = constants.canvas.WIDTH;
             this.el.height = constants.canvas.HEIGHT;
             
-            this.actionTileView = new ActionTileView({
+            this.pathTileView = new PathTileView({
                 tagName: 'canvas'
             });
             
@@ -34,9 +34,8 @@ define([
             this.elCtx.clearRect(0, 0, this.el.width, this.el.height);
             
             if (this.collection.length > 0) {
-                console.log('draw action tiles');
-                this.collection.each(function (actionTile) {
-                    this.elCtx.drawImage(this.actionTileView.el, actionTile.get('x'), actionTile.get('y'));
+                this.collection.each(function (pathTile) {
+                    this.elCtx.drawImage(this.pathTileView.el, pathTile.get('x'), pathTile.get('y'));
                 }, this);
             }
             
@@ -45,5 +44,5 @@ define([
         
 	});
 	
-	return ActionTilesView;
+	return PathTilesView;
 });

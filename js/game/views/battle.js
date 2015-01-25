@@ -15,7 +15,8 @@ define([
     'views/tile',
     'views/focusedTile',
     'views/selectedTile',
-    'views/actionTiles'
+    'views/actionTiles',
+    'views/pathTiles'
 ], function (
     Backbone,
     CharacterCollection,
@@ -33,7 +34,8 @@ define([
     TileView,
     FocusedTileView,
     SelectedTileView,
-    ActionTilesView
+    ActionTilesView,
+    PathTilesView
 ) {
 
 	var BattleView = Backbone.View.extend({
@@ -68,7 +70,12 @@ define([
             });
             
             this.movementTilesView = new ActionTilesView({
-                collection: this.model.get('characterTurnMovementRange'),
+                collection: this.model.get('characterTurnMovementTiles'),
+                tagName: 'canvas'
+            });
+            
+            this.pathTilesView = new PathTilesView({
+                collection: this.model.get('characterTurnPathTiles'),
                 tagName: 'canvas'
             });
             
@@ -137,8 +144,10 @@ define([
             // set up events
             this.listenTo(this.model, 'change:characterTurnPrimaryAction', this.onCharacterTurnPrimaryActionChange);
             this.listenTo(this.model, 'change:characterTurnCharacter', this.onTurnChange);
-            this.listenTo(this.model.get('characterTurnMovementRange'), 'reset', this.onCharacterTurnMovementRangeChange);
-            this.listenTo(this.model, 'change:focusedTile', this.onFocusedTileChange);
+            this.listenTo(this.model.get('characterTurnMovementNodes'), 'reset', this.oncharacterTurnMovementNodesChange);
+            this.listenTo(this.model.get('characterTurnMovementTiles'), 'reset', this.oncharacterTurnMovementTilesChange);
+            this.listenTo(this.model.get('characterTurnPathNodes'), 'reset', this.oncharacterTurnPathNodesChange);
+            this.listenTo(this.model.get('focusedTile'), 'change', this.onFocusedTileChange);
             
             // start rendering engine
             window.requestAnimationFrame(this.buildFrame);
@@ -150,26 +159,59 @@ define([
             'mousemove': 'onMouseMove'
         },
         
-        onCharacterTurnMovementRangeChange: function () {
-            console.log("Movement Range: ", this.model.get('characterTurnMovementRange'));
+        oncharacterTurnMovementNodesChange: function () {
+            var tiles = [];
+            
+            this.model.get('characterTurnMovementNodes').each(function (node) {
+                tiles.push(this.grid.get('tiles')[node.get('id')]);
+            }, this);
+            
+            this.model.get('characterTurnMovementTiles').reset(tiles);
+            //this.model.set('characterTurnMovementTiles', this.pathfinder.convertNodesToTiles(this.model.get('characterTurnMovementNodes')));
+        },
+        
+        oncharacterTurnPathNodesChange: function () {
+            var tiles = [];
+            
+            this.model.get('characterTurnPathNodes').each(function (node) {
+                tiles.push(this.grid.get('tiles')[node.get('id')]);
+            }, this);
+            
+            this.model.get('characterTurnPathTiles').reset(tiles);
+        },
+        
+        oncharacterTurnMovementTilesChange: function () {
+            console.log("Movement Range: ", this.model.get('characterTurnMovementTiles'));
         },
         
         onMoveComplete: function () {
-            this.model.get('characterTurnMovementRange').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
+            this.model.get('characterTurnMovementNodes').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
             this.model.get('selectedTile').setGridPosition(
                 this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridX'),
                 this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('currentTile').get('gridY')
             );
         },
         
+        isTileInRange: function (tile) {
+            var tiles = this.model.get('characterTurnMovementTiles').models;
+            
+            for (var i = 0; i < tiles.length; i++) {
+                if (tiles[i].isEqual(tile)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        },
+        
         onFocusedTileChange: function () {
             if (this.model.get('characterTurnPrimaryAction') === constants.characterTurn.primaryAction.MOVE) {
                 var focusedTile = this.model.get('focusedTile');
-                if (!focusedTile || !this.pathfinder.isTileInRange(focusedTile)) {
-                    this.model.set('characterTurnPath', []);
+                if (!focusedTile || !this.isTileInRange(focusedTile)) {
+                    this.model.get('characterTurnPathNodes').reset();
                 }
-                else if (focusedTile.isMoveable()) {
-                    this.model.set('characterTurnPath', this.pathfinder.nodesInRange[focusedTile.get('id')].path);
+                else if (this.model.get('characterTurnMovementTiles').findWhere({ id: focusedTile.get('id') }).isMoveable()) {
+                    this.model.get('characterTurnPathNodes').reset(this.model.get('characterTurnMovementNodes').findWhere({ id: focusedTile.get('id') }).get('path'));
                 }
             }
         },
@@ -182,7 +224,7 @@ define([
         onMouseLeave: function (event) {
             // removes mousemove triggered visuals when mouse is not over canvas
             this.model.get('focusedTile').setGridPosition(null, null);
-            this.model.set('characterTurnPath', []);
+            this.model.get('characterTurnPathNodes').reset();
         },
         
         onTurnChange: function () {
@@ -255,7 +297,7 @@ define([
         },
         
         onCharacterTurnPrimaryActionChange: function () {
-            this.model.get('characterTurnMovementRange').reset();
+            this.model.get('characterTurnMovementNodes').reset();
             this.model.set('characterTurnAttackRange', {});
             
             switch (this.model.get('characterTurnPrimaryAction')) {
@@ -281,7 +323,7 @@ define([
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
                     console.log('Move');
-                    this.model.get('characterTurnMovementRange').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
+                    this.model.get('characterTurnMovementNodes').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.TACTIC:
                     console.log('Tactic');
@@ -331,7 +373,7 @@ define([
             ctx.clearRect(0, 0, constants.canvas.WIDTH, constants.canvas.HEIGHT);
             
             // character path tiles
-            //this.renderPaths([this.model.get('characterTurnPath')], ctx);
+            ctx.drawImage(this.pathTilesView.el, 0, 0);
             
             // character movement tiles
             ctx.drawImage(this.movementTilesView.el, 0, 0);

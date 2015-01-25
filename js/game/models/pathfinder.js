@@ -24,6 +24,16 @@ define([
             return tiles;
         },
         
+        convertHashTableToArray: function (hashTable) {
+            var array = [];
+            
+            for (var item in hashTable) {
+                array.push(hashTable[item]);
+            }
+            
+            return array;
+        },
+        
         getNeighborNodes: function (node) {
             var north = node.get('gridY') - 1,
                 south = node.get('gridY') + 1,
@@ -139,9 +149,9 @@ define([
                     gridY: character.get('currentTile').get('gridY')
                 })
             };
-            this.nodesInRange = this.visitNode(data.startNode, data);
+            var nodesInRange = this.visitNode(data.startNode, data);
             
-            return this.convertNodesToTiles(this.nodesInRange);
+            return this.convertHashTableToArray(nodesInRange);
         },
         
         isTileInRange: function (tile) {

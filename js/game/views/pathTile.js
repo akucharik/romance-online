@@ -8,7 +8,7 @@ define([
     constants
 ) {
 
-	var ActionTileView = Backbone.View.extend({
+	var PathTileView = Backbone.View.extend({
         
         initialize: function () {
             if (this.tagName !== 'canvas') {
@@ -25,14 +25,11 @@ define([
 		},
         
         render: function () {
-            this.elCtx.strokeStyle = constants.grid.RANGE_BORDER_FILL_STYLE;
-            this.elCtx.lineWidth = constants.grid.RANGE_BORDER_WIDTH;
-            this.drawTile(constants.grid.RANGE_INDENT);
-            this.elCtx.stroke();
-
-            this.elCtx.strokeStyle = constants.grid.RANGE_OUTER_BORDER_FILL_STYLE;
-            this.elCtx.lineWidth = constants.grid.RANGE_OUTER_BORDER_WIDTH;
-            this.drawTile(constants.grid.RANGE_OUTER_BORDER_INDENT);
+            this.elCtx.fillStyle = constants.grid.SELECTED_FILL_STYLE;
+            this.elCtx.strokeStyle = constants.grid.SELECTED_BORDER_FILL_STYLE;
+            this.elCtx.lineWidth = constants.grid.SELECTED_BORDER_WIDTH;
+            this.drawTile(constants.grid.SELECTED_INDENT);
+            this.elCtx.fill();
             this.elCtx.stroke();
             
             return this;
@@ -45,5 +42,5 @@ define([
         }
 	});
 	
-	return ActionTileView;
+	return PathTileView;
 });
