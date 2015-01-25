@@ -167,7 +167,6 @@ define([
             }, this);
             
             this.model.get('characterTurnMovementTiles').reset(tiles);
-            //this.model.set('characterTurnMovementTiles', this.pathfinder.convertNodesToTiles(this.model.get('characterTurnMovementNodes')));
         },
         
         oncharacterTurnPathNodesChange: function () {
@@ -181,7 +180,7 @@ define([
         },
         
         oncharacterTurnMovementTilesChange: function () {
-            console.log("Movement Range: ", this.model.get('characterTurnMovementTiles'));
+            //console.log("Movement Range: ", this.model.get('characterTurnMovementTiles'));
         },
         
         onMoveComplete: function () {
@@ -192,7 +191,7 @@ define([
             );
         },
         
-        isTileInRange: function (tile) {
+        isFocusedTileInMovementRange: function (tile) {
             var tiles = this.model.get('characterTurnMovementTiles').models;
             
             for (var i = 0; i < tiles.length; i++) {
@@ -207,7 +206,7 @@ define([
         onFocusedTileChange: function () {
             if (this.model.get('characterTurnPrimaryAction') === constants.characterTurn.primaryAction.MOVE) {
                 var focusedTile = this.model.get('focusedTile');
-                if (!focusedTile || !this.isTileInRange(focusedTile)) {
+                if (!focusedTile || !this.isFocusedTileInMovementRange(focusedTile)) {
                     this.model.get('characterTurnPathNodes').reset();
                 }
                 else if (this.model.get('characterTurnMovementTiles').findWhere({ id: focusedTile.get('id') }).isMoveable()) {
@@ -241,8 +240,7 @@ define([
                 case constants.characterTurn.primaryAction.END_TURN:
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
-                    
-                    if (this.model.get('characters').at(this.model.get('characterTurnCharacter')).get('movementRange') > 0 && this.pathfinder.isTileInRange(this.model.get('focusedTile'))) {
+                    if (this.model.get('characterTurnPathTiles').length > 0) {
                         this.moveCharacter();
                     }
                     break;
@@ -260,26 +258,19 @@ define([
             // handle sub-pixel centering of game if it happens
             backgroundX = (backgroundX < 0) ? 0 : backgroundX;
             backgroundX = (backgroundX > constants.canvas.WIDTH) ? constants.canvas.WIDTH : backgroundX;
+            backgroundY = (backgroundY < 0) ? 0 : backgroundY;
+            backgroundY = (backgroundY > constants.canvas.HEIGHT) ? constants.canvas.HEIGHT : backgroundY;
             
             var x = Math.floor(backgroundX / constants.grid.TILE_SIZE);
             var y = Math.floor(backgroundY / constants.grid.TILE_SIZE);
             
             return this.grid.getTile(x, y);
-
-            // TODO: only needed for non-square/rectangle tile shapes
-            //drawTile(tile, foregroundCtx)
-            //if(foregroundCtx.isPointInPath(backgroundX, backgroundY)) {
-            //	return tile;
-            //}
-            //else {
-            //	return null;	
-            //}
         },
         
         moveCharacter: function () {
             this.model.get('selectedTile').setGridPosition(null, null);
-            this.model.set('characterTurnPath', []);
-            this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.pathfinder.nodesInRange[this.model.get('focusedTile').get('id')], this.onMoveComplete);
+            this.characterViews[this.model.get('characterTurnCharacter')].moveTo(this.model.get('characterTurnPathTiles'), this.onMoveComplete);
+            this.model.get('characterTurnPathTiles').reset();
         },
         
         attack: function () {
@@ -338,34 +329,6 @@ define([
 
         update: function (deltaFrameTime) {
             
-        },
-        
-        // TODO: Refactor path rendering to use tile rendering via Backbone
-        drawTile: function (tile, canvasCtx, indentValue) {
-            if (tile !== undefined && tile !== null) {
-                var indent = (indentValue === undefined ? 0 : indentValue);
-                canvasCtx.beginPath();
-                canvasCtx.rect(tile.x + indent/2, tile.y + indent/2, constants.grid.TILE_SIZE - indent, constants.grid.TILE_SIZE - indent);
-            }
-        },
-        
-        renderPaths: function (paths, canvasCtx) {
-            for (var iPath = 0; iPath < paths.length; iPath++) {
-                if (paths[iPath].length > 0) {
-                    var path = paths[iPath];
-                    for (var iTile = 0; iTile < path.length; iTile++) {
-                        canvasCtx.strokeStyle = constants.grid.PATH_BORDER_FILL_STYLE;
-                        canvasCtx.lineWidth = constants.grid.PATH_BORDER_WIDTH;
-                        this.drawTile(path[iTile], canvasCtx, constants.grid.PATH_INDENT);
-                        canvasCtx.stroke();
-                        
-                        canvasCtx.strokeStyle = constants.grid.PATH_OUTER_BORDER_FILL_STYLE;
-                        canvasCtx.lineWidth = constants.grid.PATH_OUTER_BORDER_WIDTH;
-                        this.drawTile(path[iTile], canvasCtx, constants.grid.PATH_OUTER_BORDER_INDENT);
-                        canvasCtx.stroke();
-                    };
-                }
-            };
         },
 
         renderForeground: function (ctx) {

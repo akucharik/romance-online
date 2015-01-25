@@ -67,20 +67,20 @@ define([
             return this;
         },
         
-        moveTo: function (node, callback) {
-            var endTile = node.path.slice(node.length - 1);
-            var path = _.clone(node.path);
-            this.followPath(path, node, callback);
+        moveTo: function (path, callback) {
+            console.log('move to');
+            //var endTile = node.path.slice(node.length - 1);
+            //var path = _.clone(node.path);
+            this.followPath(path, callback);
         },
         
-        followPath: function (path, node, callback) {
+        followPath: function (path, callback) {
             if (path.length > 0) {
                 //console.log('stepTo: ', this.get('path')[0]);
-                this.stepTimer = window.setInterval(this.stepTo, 16, path, node, callback);
+                this.stepTimer = window.setInterval(this.stepTo, 16, path, callback);
             }
             else {
-                this.model.set('currentTile', node.path[node.path.length - 1]);
-                this.model.set('movementRange', this.model.get('movementRange') - node.pathCost);
+                //this.model.set('currentTile', path[path.length - 1]);
                 callback();
             }
         },
@@ -131,8 +131,9 @@ define([
 
             if (x === targetX && y === targetY) {
                 clearInterval(this.stepTimer);
+                this.model.set('movementRange', this.model.get('movementRange') - tile.get('cost'));
                 path.shift();
-                this.followPath(path, node, callback);
+                this.followPath(path, callback);
             }
         },
         
