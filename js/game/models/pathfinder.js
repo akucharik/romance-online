@@ -154,37 +154,30 @@ define([
             return this.convertHashTableToArray(nodesInRange);
         },
         
-        isTileInRange: function (tile) {
-            for (var i in this.nodesInRange) {
-                if (i === tile.id) {
-                    return true;
-                }
-            };
-            return false;
-        },
-        
         visitNodeAttack: function (node, data) {
             var neighbors = this.getNeighborNodes(node);
+            var neighbor = null;
+            var newNode = null;
             
             for (var i = 0; i < neighbors.length; i++) {
-                var currentNeighbor = neighbors[i];
+                neighbor = neighbors[i];
 
-                if (currentNeighbor.id !== data.startNode.id) {
-                    // visit a new node
-                    if (!data.nodes[currentNeighbor.id]) {
-                        var newNode = _.clone(currentNeighbor);
+                if (neighbor.get('id') !== data.startNode.get('id')) {
+                    // visit the node
+                    newNode = new Node({
+                        gridX: neighbor.get('gridX'),
+                        gridY: neighbor.get('gridY'),
+                        path: node.get('path').slice(),
+                        pathCost: node.get('pathCost') + 1
+                    });
 
-                        newNode.path = node.path.slice();
-                        newNode.path.push(currentNeighbor);
-                        newNode.pathCost = node.pathCost;
-                        newNode.pathCost++;
+                    newNode.get('path').push(neighbor);
 
-                        if (newNode.pathCost <= data.maxPathCost) {
-                            data.nodes[newNode.id] = newNode;
-                        }
-                        if (newNode.pathCost < data.maxPathCost) {
-                            this.visitNodeAttack(newNode, data);
-                        }
+                    if (newNode.get('pathCost') <= data.maxPathCost) {
+                        data.nodes[newNode.get('id')] = newNode;
+                    }
+                    if (newNode.get('pathCost') < data.maxPathCost) {
+                        this.visitNodeAttack(newNode, data);
                     }
                 }
             }
@@ -192,28 +185,24 @@ define([
         },
         
         findEnemies: function (character) {
-            var startNode = _.clone(character.get('currentTile')),
-                data = {},
-                nodesInRange = {},
-                result = {}
-            
-            startNode.path = [];
-            startNode.pathCost = 0;
-            data = { 
+            var data = { 
                 maxPathCost: character.get('attackRange'), 
                 nodes: {},
-                startNode: startNode
+                startNode: new Node({
+                    gridX: character.get('currentTile').get('gridX'), 
+                    gridY: character.get('currentTile').get('gridY')
+                })
             };
+            var nodesInRange = this.visitNodeAttack(data.startNode, data);
+            var attackNodes = [];
             
-            nodesInRange = this.visitNodeAttack(startNode, data);
-            
-            for (var i in nodesInRange) {
-                if (nodesInRange[i].occupied) {
-                    result[i] = nodesInRange[i];
+            for (var node in nodesInRange) {
+                if (this.grid.get('tiles')[node].get('occupied')) {
+                    attackNodes.push(nodesInRange[node]);
                 }
             }
-
-            return result;
+            
+            return attackNodes;
         }
 
     });

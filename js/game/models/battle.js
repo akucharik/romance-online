@@ -21,7 +21,8 @@ define([
             characterTurnPathNodes: new Backbone.Collection,
             characterTurnPathTiles: new Backbone.Collection,
             characterTurnPrimaryAction: null,
-            characterTurnAttackRange: null,
+            characterTurnAttackNodes: new Backbone.Collection,
+            characterTurnAttackTiles: new Backbone.Collection,
             
             // tiles
             focusedTile: new TileModel(),

@@ -79,6 +79,11 @@ define([
                 tagName: 'canvas'
             });
             
+            this.attackTilesView = new ActionTilesView({
+                collection: this.model.get('characterTurnAttackTiles'),
+                tagName: 'canvas'
+            });
+            
             // set up characters
             this.character1 = new CharacterModel({
                 spriteX: 205,
@@ -145,8 +150,8 @@ define([
             this.listenTo(this.model, 'change:characterTurnPrimaryAction', this.onCharacterTurnPrimaryActionChange);
             this.listenTo(this.model, 'change:characterTurnCharacter', this.onTurnChange);
             this.listenTo(this.model.get('characterTurnMovementNodes'), 'reset', this.oncharacterTurnMovementNodesChange);
-            this.listenTo(this.model.get('characterTurnMovementTiles'), 'reset', this.oncharacterTurnMovementTilesChange);
             this.listenTo(this.model.get('characterTurnPathNodes'), 'reset', this.oncharacterTurnPathNodesChange);
+            this.listenTo(this.model.get('characterTurnAttackNodes'), 'reset', this.oncharacterTurnAttackNodesChange);
             this.listenTo(this.model.get('focusedTile'), 'change', this.onFocusedTileChange);
             
             // start rendering engine
@@ -159,6 +164,7 @@ define([
             'mousemove': 'onMouseMove'
         },
         
+        // TODO: refactor these functions into one getTilesFromNodes
         oncharacterTurnMovementNodesChange: function () {
             var tiles = [];
             
@@ -179,8 +185,14 @@ define([
             this.model.get('characterTurnPathTiles').reset(tiles);
         },
         
-        oncharacterTurnMovementTilesChange: function () {
-            //console.log("Movement Range: ", this.model.get('characterTurnMovementTiles'));
+        oncharacterTurnAttackNodesChange: function () {
+            var tiles = [];
+            
+            this.model.get('characterTurnAttackNodes').each(function (node) {
+                tiles.push(this.grid.get('tiles')[node.get('id')]);
+            }, this);
+            
+            this.model.get('characterTurnAttackTiles').reset(tiles);
         },
         
         onMoveComplete: function () {
@@ -233,7 +245,7 @@ define([
         onClick: function () {
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    if (this.isTileInAttackRange(this.model.get('focusedTile'))) {
+                    if (this.isTileInAttackTiles(this.model.get('focusedTile'))) {
                         this.attack();
                     }
                     break;
@@ -275,11 +287,11 @@ define([
         
         attack: function () {
             this.characterViews[this.model.get('characterTurnCharacter')].attack(this.model.get('focusedTile').get('occupied'));
-            this.model.set('characterTurnAttackRange', {});
+            this.model.get('characterTurnAttackNodes').reset();
         },
         
         isTileInAttackRange: function (tile) {
-            for (var i in this.model.get('characterTurnAttackRange')) {
+            for (var i in this.model.get('characterTurnAttackTiles')) {
                 if (i === tile.get('id')) {
                     return true;
                 }
@@ -289,11 +301,11 @@ define([
         
         onCharacterTurnPrimaryActionChange: function () {
             this.model.get('characterTurnMovementNodes').reset();
-            this.model.set('characterTurnAttackRange', {});
+            this.model.get('characterTurnAttackNodes').reset();
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    this.model.set('characterTurnAttackRange', this.pathfinder.findEnemies(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
+                    this.model.get('characterTurnAttackNodes').reset(this.pathfinder.findEnemies(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
                     console.log('End turn');
@@ -342,7 +354,7 @@ define([
             ctx.drawImage(this.movementTilesView.el, 0, 0);
             
             // character attack tiles
-            //ctx.drawImage(this.attackTilesView.el, 0, 0);
+            ctx.drawImage(this.attackTilesView.el, 0, 0);
             
             // selected tile
             ctx.drawImage(this.selectedTileView.el, this.model.get('selectedTile').get('x'), this.model.get('selectedTile').get('y'));
