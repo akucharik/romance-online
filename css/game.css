@@ -179,6 +179,16 @@ td {
     z-index: 100;
 }
 
+.event-log::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 14px;
+}
+
+.event-log::-webkit-scrollbar-thumb {
+    border-radius: 14px;
+    background-color: rgba(255,255,255,.3);
+}
+
 .event-log > p {
     color: white;
     font-size: 100%;
