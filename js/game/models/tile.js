@@ -66,6 +66,7 @@ define([
         setGridPosition: function (x, y) {
             this.set('gridX', x);
             this.set('gridY', y);
+            this.trigger('gridPosition');
         },
         
         setPosition: function () {

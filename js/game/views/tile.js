@@ -18,8 +18,7 @@ define([
             
             this.elCtx = this.el.getContext('2d');
             
-            this.listenTo(this.model, 'change:gridX', this.onGridPositionChange);
-            this.listenTo(this.model, 'change:gridY', this.onGridPositionChange);
+            this.listenTo(this.model, 'gridPosition', this.onGridPositionChange);
             
             this.el.width = constants.grid.TILE_SIZE;
             this.el.height = constants.grid.TILE_SIZE;

@@ -155,7 +155,7 @@ define([
             this.listenTo(this.model.get('characterTurnMovementNodes'), 'reset', this.oncharacterTurnMovementNodesChange);
             this.listenTo(this.model.get('characterTurnPathNodes'), 'reset', this.oncharacterTurnPathNodesChange);
             this.listenTo(this.model.get('characterTurnAttackNodes'), 'reset', this.oncharacterTurnAttackNodesChange);
-            this.listenTo(this.model.get('focusedTile'), 'change', this.onFocusedTileChange);
+            this.listenTo(this.model.get('focusedTile'), 'gridPosition', this.onFocusedTileChange);
             
             // start rendering engine
             window.requestAnimationFrame(this.buildFrame);
@@ -233,7 +233,9 @@ define([
         
         onMouseMove: function (event) {
             var currentTile = this.determineFocusedTile(event);
-            this.model.get('focusedTile').setGridPosition(currentTile.get('gridX'), currentTile.get('gridY'));
+            if (!currentTile.isEqual(this.model.get('focusedTile'))) {
+                this.model.get('focusedTile').setGridPosition(currentTile.get('gridX'), currentTile.get('gridY'));
+            }
         },
         
         onMouseLeave: function (event) {
