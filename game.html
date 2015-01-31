@@ -33,7 +33,13 @@
             <span id="gameTime">0</span> sec
         </div>
     </div>
+    
+    <div id="eventLog" class="event-log"></div>
 
+    <script id="eventLogItemTemplate" type="text/template">
+        <span class="<%= cssClass %>"><%= message %></span>
+    </script>
+    
 	<script src="js/libraries/require-2.1.14.js" data-main="js/mainGame.js"></script>
 </body>
 </html>

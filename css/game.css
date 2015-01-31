@@ -1,7 +1,7 @@
 body {
     background: rgb(50,50,50) url('../images/demoBkgdFloral.jpg');
     color: rgb(255,255,255);
-    font-family: sans-serif;
+    font-family: Menlo, sans-serif;
     font-size: 0.85em;
     margin: 1.0em;
 }
@@ -66,7 +66,7 @@ button {
     right: 0.5em;
     text-align: right;
     top: 0.5em;
-    width: 5.0em;
+    width: 6.0em;
     z-index: 10;
  }
  
@@ -164,4 +164,28 @@ td {
 .character-list td:nth-child(3) {
     text-align: right;
     width: 2em;
+}
+
+/* Event log */
+.event-log {
+    background-color: rgba(0,0,0,0.5);
+    bottom: 1.0em;
+    height: 12.2em;
+    left: 1.0em;
+    overflow-y: scroll;
+    padding: 0.5em 1.0em;
+    position: absolute;
+    width: 40em;
+    z-index: 100;
+}
+
+.event-log > p {
+    color: white;
+    font-size: 100%;
+    margin: 0.5em 0;
+    text-shadow: 0 1px 2px black;
+}
+
+.log-item-default {
+    color: yellow;
 }

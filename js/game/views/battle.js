@@ -2,6 +2,7 @@ define([
     'backbone',
     'collections/character',
     'constants',
+    'eventLog',
     'models/character',
     'models/gameUtilities',
     'models/grid',
@@ -20,10 +21,11 @@ define([
 ], function (
     Backbone,
     CharacterCollection,
-    constants, 
+    constants,
+    eventLog,
     CharacterModel,
     GameUtilitiesModel, 
-    GridModel, 
+    GridModel,
     Pathfinder,
     StateManagerModel,
     TileModel,
@@ -35,7 +37,8 @@ define([
     FocusedTileView,
     SelectedTileView,
     ActionTilesView,
-    PathTilesView
+    PathTilesView,
+    EventLogView
 ) {
 
 	var BattleView = Backbone.View.extend({
@@ -216,6 +219,7 @@ define([
         },
         
         onFocusedTileChange: function () {
+            eventLog.add({ message: 'Focused tile changed'});
             if (this.model.get('characterTurnPrimaryAction') === constants.characterTurn.primaryAction.MOVE) {
                 var focusedTile = this.model.get('focusedTile');
                 if (!focusedTile || !this.isFocusedTileInMovementRange(focusedTile)) {
@@ -305,10 +309,11 @@ define([
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
+                    eventLog.add({ message: 'State: Attack'});
                     this.model.get('characterTurnAttackNodes').reset(this.pathfinder.findEnemies(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
-                    console.log('End turn');
+                    eventLog.add({ message: 'End turn'});
                     this.characterViews[this.model.get('characterTurnCharacter')].reset();
                     this.model.resetCharacterTurn();
                     // TODO: makes this a function that is "chooseNextCharacter" or "switchCharacters" or something
@@ -325,15 +330,15 @@ define([
                     this.characterViews[this.model.get('characterTurnCharacter')].switchCharacters(this.model.get('characters').at(this.model.get('characterTurnCharacter')));
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
-                    console.log('Move');
+                    eventLog.add({ message: 'State: Move'});
                     this.model.get('characterTurnMovementNodes').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.TACTIC:
-                    console.log('Tactic');
+                    eventLog.add({ message: 'State: Tactic'});
                     this.characterViews[this.model.get('characterTurnCharacter')].tactic();
                     break;
                 case constants.characterTurn.primaryAction.WAIT:
-                    console.log('Wait');
+                    eventLog.add({ message: 'State: Waiting'});
                     this.characterViews[this.model.get('characterTurnCharacter')].wait();
                     break;
             }

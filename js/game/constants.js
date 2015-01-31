@@ -77,6 +77,18 @@ define(function() {
                 GAMES: 2,
                 CHARACTERS: 3
             }
+        },
+        
+        log: {
+            item: {
+                cssClass: {
+                    DEFAULT: 'log-item-default'
+                },
+                type: {
+                    DEFAULT: 0
+                }
+            }
+            
         }
         
     }
