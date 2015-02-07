@@ -25,20 +25,26 @@ define([
             movementRange: 4,
             maxMovementRange: 4,
             
-            // Misc
+            // Combat
             target: null,
             
-            // Display
+            // Position
             currentTile: null,
             path: null,
+            velocity: 200,
+            x: null,
+            y: null,
+            
+            // Rendering
             spritesheet: document.getElementById('spritesheet'),
             spriteX: 0,
             spriteY: 0,
             spriteWidth: 0,
             spriteHeight: 0,
-            velocity: 200,
-            x: null,
-            y: null
+            time: null,
+            
+            // States
+            isTakingDamage: false
 		},
         
         initialize: function () {

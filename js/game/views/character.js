@@ -15,11 +15,14 @@ define([
 			this.elCtx = this.el.getContext('2d');
             this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
             this.listenTo(this.model, 'change:target', this.attack);
+            this.listenTo(this.model, 'change:health', this.onHealthChange);
             this.stepTo = this.stepTo.bind(this);
             this.switchCharacters = this.switchCharacters.bind(this);
 		},
         
         render: function () {
+            var healthDelta = 0;
+            
             this.el.width = constants.grid.TILE_SIZE;
             this.el.height = constants.grid.TILE_SIZE;
             this.elCtx.drawImage(
@@ -67,9 +70,38 @@ define([
             this.elCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
             this.elCtx.stroke();
             
+            if (this.model.get('isTakingDamage') === true) {
+                healthDelta = this.model.previous('health') - this.model.get('health');
+                
+                this.elCtx.font = "15px Courier";
+                this.elCtx.textAlign = "right";
+
+                this.elCtx.strokeStyle = 'rgb(0, 0, 0)';
+                this.elCtx.lineWidth = 4;
+                this.elCtx.strokeText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+
+                this.elCtx.fillStyle = 'rgb(255, 150, 150)';
+                this.elCtx.fillText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+            }
+            
             return this;
         },
         
+        onHealthChange: function () {
+            if (this.model.get('health') < this.model.previous('health')) {
+                this.model.set('isTakingDamage', true);
+                
+                // this needs refactored to NOT use "setTimeout" and instead user a timer and overall game time
+                var that = this;
+                setTimeout(function () {
+                    that.model.set('isTakingDamage', false);
+                }, 2000);
+            }
+            else {
+                
+            }
+        },
+                
         moveTo: function (path, callback) {
             console.log('move to');
             //var endTile = node.path.slice(node.length - 1);
