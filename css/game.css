@@ -208,7 +208,7 @@ td {
     left: 1.0em;
     overflow-y: scroll;
     padding: 0.5em 1.0em;
-    position: absolute;
+    position: fixed;
     width: 40em;
     z-index: 100;
 }

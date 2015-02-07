@@ -1,9 +1,11 @@
 define([
 	'backbone',
-    'constants'
+    'constants',
+    'eventLog'
 ], function(
     Backbone,
-    constants
+    constants,
+    eventLog
 ) {
 
 	var CharacterView = Backbone.View.extend({
@@ -12,6 +14,7 @@ define([
             this.parent = options.parent;
 			this.elCtx = this.el.getContext('2d');
             this.listenTo(this.model, 'change:currentTile', this.onCurrentTileChange);
+            this.listenTo(this.model, 'change:target', this.attack);
             this.stepTo = this.stepTo.bind(this);
             this.switchCharacters = this.switchCharacters.bind(this);
 		},
@@ -36,10 +39,10 @@ define([
 
             this.elCtx.strokeStyle = 'rgb(0, 0, 0)';
             this.elCtx.lineWidth = 4;
-            this.elCtx.strokeText(this.model.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
+            this.elCtx.strokeText(this.model.get('health'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
 
             this.elCtx.fillStyle = 'rgb(255, 255, 255)';
-            this.elCtx.fillText(this.model.get('currentHealth'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
+            this.elCtx.fillText(this.model.get('health'), constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 15);
 
             // health bar
             this.elCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
@@ -55,7 +58,7 @@ define([
 
             this.elCtx.fillStyle = 'rgb(0, 255, 0)';
             this.elCtx.beginPath();
-            this.elCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, (constants.grid.TILE_SIZE -9) * this.model.get('currentHealth') / this.model.get('maxHealth'), 5);
+            this.elCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, (constants.grid.TILE_SIZE -9) * this.model.get('health') / this.model.get('maxHealth'), 5);
             this.elCtx.fill();
 
             this.elCtx.strokeStyle = 'rgb(0, 255, 0)';
@@ -137,13 +140,19 @@ define([
             }
         },
         
-        attack: function (target) {
-            var damage = Math.round(Math.random() * 1500);
-            if (target.get('currentHealth') - damage < 0) {
-                target.set('currentHealth', 0);
-            }
-            else {
-                target.set('currentHealth', target.get('currentHealth') - damage);
+        attack: function () {
+            if (this.model.get('target') !== null) {
+                var damage = Math.round(Math.random() * 1500);
+
+                if (this.model.get('target').get('health') - damage < 0) {
+                    this.model.get('target').set('health', 0);
+                }
+                else {
+                    this.model.get('target').set('health', this.model.get('target').get('health') - damage);
+                }
+
+                eventLog.add({ message: this.model.get('target').get('name') + ' took ' + damage + ' damage!' });
+                this.model.set('target', null);
             }
         },
         

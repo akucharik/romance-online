@@ -219,7 +219,7 @@ define([
         },
         
         onFocusedTileChange: function () {
-            eventLog.add({ message: 'Focused tile changed'});
+            //eventLog.add({ message: 'Focused tile changed'});
             if (this.model.get('characterTurnPrimaryAction') === constants.characterTurn.primaryAction.MOVE) {
                 var focusedTile = this.model.get('focusedTile');
                 if (!focusedTile || !this.isFocusedTileInMovementRange(focusedTile)) {
@@ -292,16 +292,22 @@ define([
         },
         
         attack: function () {
-            this.characterViews[this.model.get('characterTurnCharacter')].attack(this.model.get('focusedTile').get('occupied'));
+            //this.characterViews[this.model.get('characterTurnCharacter')].attack(this.model.get('focusedTile').get('occupied'));
+            this.characterViews[this.model.get('characterTurnCharacter')].model.set('target', this.grid.get('tiles')[this.model.get('focusedTile').get('id')].get('occupied'));
             this.model.get('characterTurnAttackNodes').reset();
         },
         
-        isTileInAttackRange: function (tile) {
-            for (var i in this.model.get('characterTurnAttackTiles')) {
-                if (i === tile.get('id')) {
+        isTileInAttackTiles: function (tile) {
+            //for (var i in this.model.get('characterTurnAttackTiles')) {
+            //    if (i === tile.get('id')) {
+            //        return true;
+            //    }
+            //};
+            for (var i = 0; i < this.model.get('characterTurnAttackTiles').models.length; i++) {
+                if (this.model.get('characterTurnAttackTiles').models[i].get('id') === tile.get('id')) {
                     return true;
                 }
-            };
+            }
             return false;
         },
         
@@ -311,7 +317,7 @@ define([
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    eventLog.add({ message: 'State: Attack'});
+                    eventLog.add({ message: 'State: Attack' });
                     this.model.get('characterTurnAttackNodes').reset(this.pathfinder.findEnemies(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:

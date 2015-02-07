@@ -8,16 +8,29 @@ define([
     
 	var CharacterModel = Backbone.Model.extend({
 		defaults: {
-            attackRange: 4,
+            // Basic
+            name: 'Unknown',
+            
+            // Attributes
+            attributePoints: 50,
             intelligence: 50,
             strength: 50,
-            availableAttributePoints: 50,
-            currentHealth: 6890,
+            
+            // Health
+            health: 6890,
             maxHealth: 10000,
-            currentTile: null,
-            maxMovementRange: 4,
+            
+            // Skill values
+            attackRange: 4,
             movementRange: 4,
-            name: 'Unknown',
+            maxMovementRange: 4,
+            
+            // Misc
+            target: null,
+            
+            // Display
+            currentTile: null,
+            path: null,
             spritesheet: document.getElementById('spritesheet'),
             spriteX: 0,
             spriteY: 0,
