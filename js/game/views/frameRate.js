@@ -1,17 +1,16 @@
 define([
 	'backbone',
-    'jsUtilities',
+    'utilities',
     'time'
 ], function(
     Backbone,
-    JsUtilities,
+    Utilities,
     time
 ) {
 
 	var FrameRateView = Backbone.View.extend({
         
 		initialize: function() {
-            this.jsUtilities = new JsUtilities();
             this.listenTo(time.model, 'change:frameTime', this.averageFrameRate);
             this.listenTo(this.model, 'change:averageFrameRate', this.render);
 		},
@@ -31,7 +30,7 @@ define([
             }
             previousFrameRates.push(this.calculateCurrentFrameRate());
             this.model.set('previousFrameRates', previousFrameRates);
-            this.model.set('averageFrameRate', Math.round(this.jsUtilities.array.average(this.model.get('previousFrameRates'))));
+            this.model.set('averageFrameRate', Math.round(Utilities.Math.average(this.model.get('previousFrameRates'))));
         }
         
 	});
