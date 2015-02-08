@@ -3,15 +3,17 @@ define([
     'collections/character',
     'constants',
     'eventLog',
+    'time',
     'models/character',
-    'models/gameUtilities',
+    'models/frameRate',
     'models/grid',
     'models/pathfinder',
     'models/stateManager',
     'models/tile',
     'views/character',
     'views/characterTurn',
-    'views/gameUtilities',
+    'views/frameRate',
+    'views/gameTime',
     'views/grid',
     'views/tile',
     'views/focusedTile',
@@ -23,15 +25,17 @@ define([
     CharacterCollection,
     constants,
     eventLog,
+    time,
     CharacterModel,
-    GameUtilitiesModel, 
+    FrameRateModel,
     GridModel,
     Pathfinder,
     StateManagerModel,
-    TileModel,
+    TimeModel,
     CharacterView,
     CharacterTurnView,
-    GameUtilitiesView,
+    FrameRateView,
+    GameTimeView,
     GridView,
     TileView,
     FocusedTileView,
@@ -48,11 +52,17 @@ define([
             this.onMoveComplete = this.onMoveComplete.bind(this);
             this.buildFrame = this.buildFrame.bind(this);
             
-            // set up game utilities
-            this.gameUtilities = new GameUtilitiesModel();
-            this.gameUtilitiesView = new GameUtilitiesView({ 
-                model: this.gameUtilities,
-                el: '#gameUtilities'
+            // set up game time
+            this.gameTime = new GameTimeView({
+                model: time.model,
+                el: '#gameTime'
+            });
+            
+            // set up frame rate
+            this.frameRate = new FrameRateModel();
+            this.frameRateView = new FrameRateView({
+                model: this.frameRate,
+                el: '#frameRate'
             });
             
             // set up grid
@@ -386,11 +396,8 @@ define([
         },
 
         buildFrame: function () {
-            this.gameUtilities.time.set('previousFrameTime', this.gameUtilities.time.get('currentFrameTime'));
-            this.gameUtilities.time.set('currentFrameTime', Date.now());
-            this.gameUtilities.time.set('deltaFrameTime', this.gameUtilitiesView.gameTime.calculateDeltaFrameTime());
-            this.gameUtilities.time.set('gameTime', this.gameUtilities.time.get('gameTime') + this.gameUtilities.time.get('deltaFrameTime'));
-            this.update(this.gameUtilities.time.get('deltaFrameTime'));
+            time.model.set('frameTime', Date.now() / 1000);
+            this.update(time.model.get('frameTimeDelta'));
             this.renderForeground(this.foregroundCtx);
             window.requestAnimationFrame(this.buildFrame);
         }

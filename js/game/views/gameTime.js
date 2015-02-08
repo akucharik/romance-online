@@ -1,32 +1,24 @@
 define([
-	'backbone',
-    'jquery'
+	'backbone'
 ], function(
-    Backbone,
-    $
+    Backbone
 ) {
 
-	var TimeView = Backbone.View.extend({
+	var GameTimeView = Backbone.View.extend({
         
-		initialize: function() {
-            this.listenTo(this.model.time, 'change:gameTime', this.render);
+		initialize: function () {
+            this.listenTo(this.model, 'change:gameTime', this.render);
 		},
 		
-		render: function() {
-            this.$el.html(
-                this.formatGameTime(this.model.time.get('gameTime'))
-            );
+		render: function () {
+            this.el.innerHTML = this.formatGameTime(this.model.get('gameTime'));
 		},
         
-        calculateDeltaFrameTime: function() {
-            return (this.model.time.get('currentFrameTime') - this.model.time.get('previousFrameTime')) / 1000;
-        },
-        
-        formatGameTime: function(gameTime) {
+        formatGameTime: function (gameTime) {
             return parseFloat(Math.round((gameTime * 10)) / 10).toFixed(1);
         }
         
 	});
 	
-	return TimeView;
+	return GameTimeView;
 });
