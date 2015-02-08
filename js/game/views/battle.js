@@ -229,7 +229,7 @@ define([
         },
         
         onFocusedTileChange: function () {
-            //eventLog.add({ message: 'Focused tile changed'});
+            //eventLog.collection.add({ message: 'Focused tile changed'});
             if (this.model.get('characterTurnPrimaryAction') === constants.characterTurn.primaryAction.MOVE) {
                 var focusedTile = this.model.get('focusedTile');
                 if (!focusedTile || !this.isFocusedTileInMovementRange(focusedTile)) {
@@ -327,11 +327,11 @@ define([
             
             switch (this.model.get('characterTurnPrimaryAction')) {
                 case constants.characterTurn.primaryAction.ATTACK:
-                    eventLog.add({ message: 'State: Attack' });
+                    eventLog.collection.add({ message: 'State: Attack' });
                     this.model.get('characterTurnAttackNodes').reset(this.pathfinder.findEnemies(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.END_TURN:
-                    eventLog.add({ message: 'End turn'});
+                    eventLog.collection.add({ message: 'End turn'});
                     this.characterViews[this.model.get('characterTurnCharacter')].reset();
                     this.model.resetCharacterTurn();
                     // TODO: makes this a function that is "chooseNextCharacter" or "switchCharacters" or something
@@ -348,15 +348,15 @@ define([
                     this.characterViews[this.model.get('characterTurnCharacter')].switchCharacters(this.model.get('characters').at(this.model.get('characterTurnCharacter')));
                     break;
                 case constants.characterTurn.primaryAction.MOVE:
-                    eventLog.add({ message: 'State: Move'});
+                    eventLog.collection.add({ message: 'State: Move'});
                     this.model.get('characterTurnMovementNodes').reset(this.pathfinder.findPaths(this.model.get('characters').at(this.model.get('characterTurnCharacter'))));
                     break;
                 case constants.characterTurn.primaryAction.TACTIC:
-                    eventLog.add({ message: 'State: Tactic'});
+                    eventLog.collection.add({ message: 'State: Tactic'});
                     this.characterViews[this.model.get('characterTurnCharacter')].tactic();
                     break;
                 case constants.characterTurn.primaryAction.WAIT:
-                    eventLog.add({ message: 'State: Waiting'});
+                    eventLog.collection.add({ message: 'State: Waiting'});
                     this.characterViews[this.model.get('characterTurnCharacter')].wait();
                     break;
             }

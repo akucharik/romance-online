@@ -19,5 +19,5 @@ define([
         el: '#eventLog'
     });
     
-    return eventLog;
+    return eventLogView;
 });

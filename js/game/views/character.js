@@ -183,7 +183,7 @@ define([
                     this.model.get('target').set('health', this.model.get('target').get('health') - damage);
                 }
 
-                eventLog.add({ message: this.model.get('target').get('name') + ' took ' + damage + ' damage!' });
+                eventLog.collection.add({ message: this.model.get('target').get('name') + ' took ' + damage + ' damage!' });
                 this.model.set('target', null);
             }
         },
