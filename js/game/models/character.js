@@ -44,7 +44,7 @@ define([
             time: null,
             
             // States
-            isTakingDamage: false
+            isChangingHealth: false
 		},
         
         initialize: function () {

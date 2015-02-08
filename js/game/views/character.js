@@ -70,18 +70,26 @@ define([
             this.elCtx.rect(4.5, constants.grid.TILE_SIZE - 10.5, constants.grid.TILE_SIZE - 9, 5);
             this.elCtx.stroke();
             
-            if (this.model.get('isTakingDamage') === true) {
-                healthDelta = this.model.previous('health') - this.model.get('health');
-                
+            if (this.model.get('isChangingHealth') === true) {
                 this.elCtx.font = "15px Courier";
                 this.elCtx.textAlign = "right";
-
                 this.elCtx.strokeStyle = 'rgb(0, 0, 0)';
                 this.elCtx.lineWidth = 4;
-                this.elCtx.strokeText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
-
-                this.elCtx.fillStyle = 'rgb(255, 150, 150)';
-                this.elCtx.fillText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                
+                if (this.model.get('health') < this.model.previous('health')) {
+                    healthDelta = this.model.previous('health') - this.model.get('health');
+                    
+                    this.elCtx.fillStyle = 'rgb(255, 150, 150)';
+                    this.elCtx.strokeText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                    this.elCtx.fillText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                }
+                else {
+                    healthDelta = this.model.get('health') - this.model.previous('health');
+                    
+                    this.elCtx.fillStyle = 'rgb(100, 150, 255)';
+                    this.elCtx.strokeText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                    this.elCtx.fillText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                }
             }
             
             return this;
@@ -89,16 +97,22 @@ define([
         
         onHealthChange: function () {
             if (this.model.get('health') < this.model.previous('health')) {
-                this.model.set('isTakingDamage', true);
+                this.model.set('isChangingHealth', true);
                 
                 // this needs refactored to NOT use "setTimeout" and instead user a timer and overall game time
                 var that = this;
                 setTimeout(function () {
-                    that.model.set('isTakingDamage', false);
+                    that.model.set('isChangingHealth', false);
                 }, 2000);
             }
             else {
+                this.model.set('isChangingHealth', true);
                 
+                // this needs refactored to NOT use "setTimeout" and instead user a timer and overall game time
+                var that = this;
+                setTimeout(function () {
+                    that.model.set('isChangingHealth', false);
+                }, 2000);
             }
         },
                 
