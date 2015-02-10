@@ -21,7 +21,8 @@ define([
 		},
         
         render: function () {
-            var healthDelta = 0;
+            var negativeHealthText = '';
+            var positiveHealthText = '';
             
             this.el.width = constants.grid.TILE_SIZE;
             this.el.height = constants.grid.TILE_SIZE;
@@ -77,18 +78,20 @@ define([
                 this.elCtx.lineWidth = 4;
                 
                 if (this.model.get('health') < this.model.previous('health')) {
-                    healthDelta = this.model.previous('health') - this.model.get('health');
+                    negativeHealthText += '-';
+                    negativeHealthText += this.model.previous('health') - this.model.get('health');
                     
                     this.elCtx.fillStyle = 'rgb(255, 150, 150)';
-                    this.elCtx.strokeText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
-                    this.elCtx.fillText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                    this.elCtx.strokeText(negativeHealthText, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                    this.elCtx.fillText(negativeHealthText, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
                 }
                 else {
-                    healthDelta = this.model.get('health') - this.model.previous('health');
+                    positiveHealthText += '+';
+                    positiveHealthText += this.model.get('health') - this.model.previous('health');
                     
                     this.elCtx.fillStyle = 'rgb(100, 150, 255)';
-                    this.elCtx.strokeText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
-                    this.elCtx.fillText(healthDelta, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                    this.elCtx.strokeText(positiveHealthText, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
+                    this.elCtx.fillText(positiveHealthText, constants.grid.TILE_SIZE - 4, constants.grid.TILE_SIZE - 45);
                 }
             }
             
