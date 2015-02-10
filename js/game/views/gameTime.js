@@ -7,15 +7,15 @@ define([
 	var GameTimeView = Backbone.View.extend({
         
 		initialize: function () {
-            this.listenTo(this.model, 'change:gameTime', this.render);
+            this.listenTo(this.model, 'change:elapsedGameTime', this.render);
 		},
 		
 		render: function () {
-            this.el.innerHTML = this.formatGameTime(this.model.get('gameTime'));
+            this.el.innerHTML = this.formatTime(this.model.get('elapsedGameTime'));
 		},
         
-        formatGameTime: function (gameTime) {
-            return parseFloat(Math.round((gameTime * 10)) / 10).toFixed(1);
+        formatTime: function (time) {
+            return parseFloat(Math.round((time * 10)) / 10).toFixed(1);
         }
         
 	});

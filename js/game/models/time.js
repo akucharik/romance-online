@@ -9,10 +9,17 @@ define([
         defaults: {
             // Frame time
             frameTime: Date.now() / 1000,
-            frameTimeDelta: 0,
+            elapsedFrameTime: 0,
             
             // Game time
-            gameTime: 0
+            elapsedGameTime: 0,
+            
+            // Pause time
+            pauseTime: 0,
+            pauseDuration: 0,
+            
+            // States
+            paused: false
         }
         
     });

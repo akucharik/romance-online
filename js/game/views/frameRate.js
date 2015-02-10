@@ -20,7 +20,7 @@ define([
 		},
 
         calculateCurrentFrameRate: function () {
-            return Math.round(1 / time.model.get('frameTimeDelta'));
+            return Math.round(1 / time.model.get('elapsedFrameTime'));
         },
         
         averageFrameRate: function () {

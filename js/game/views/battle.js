@@ -25,7 +25,7 @@ define([
     CharacterCollection,
     constants,
     eventLog,
-    time,
+    timeView,
     CharacterModel,
     FrameRateModel,
     GridModel,
@@ -52,9 +52,12 @@ define([
             this.onMoveComplete = this.onMoveComplete.bind(this);
             this.buildFrame = this.buildFrame.bind(this);
             
+            // set time
+            this.timeView = timeView;
+            
             // set up game time
             this.gameTime = new GameTimeView({
-                model: time.model,
+                model: this.timeView.model,
                 el: '#gameTime'
             });
             
@@ -396,9 +399,11 @@ define([
         },
 
         buildFrame: function () {
-            time.model.set('frameTime', Date.now() / 1000);
-            this.update(time.model.get('frameTimeDelta'));
-            this.renderForeground(this.foregroundCtx);
+            if (this.timeView.model.get('paused') !== true) {
+                this.timeView.model.set('frameTime', Date.now() / 1000);
+                this.update(this.timeView.model.get('frameTimeDelta'));
+                this.renderForeground(this.foregroundCtx);
+            }
             window.requestAnimationFrame(this.buildFrame);
         }
         
