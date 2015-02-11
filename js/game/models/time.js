@@ -4,10 +4,12 @@
 
 define([
 	'backbone'
-], function(
+], function (
     Backbone
 ) {
-
+    
+    'use strict';
+    
     var TimeModel = Backbone.Model.extend({
         
         defaults: {

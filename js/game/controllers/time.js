@@ -4,13 +4,23 @@
 
 define([
 	'backbone'
-], function(
+], function (
     Backbone
 ) {
+    
+    'use strict';
 
-	var TimeView = Backbone.View.extend({
+	var TimeController = function (options) {
         
-		initialize: function() {
+        _.extend(this, Backbone.Events);
+        var options = options || {};
+        this.model = options.model;
+        this.initialize();
+    };
+    
+    TimeController.prototype = {
+        
+        initialize: function () {
             this.listenTo(this.model, 'change:frameTime', this.update);
             this.listenTo(this.model, 'change:isPaused', this.onIsPausedChange);
 		},
@@ -37,14 +47,15 @@ define([
             return this;
         },
         
-        update: function() {
+        update: function () {
             this.model.set('elapsedFrameTime', this.model.get('frameTime') - this.model.previous('frameTime'));
             this.model.set('elapsedGameTime', this.model.get('elapsedGameTime') + this.model.get('elapsedFrameTime'));
             
             return this;
         }
-        
-	});
+    };
+    
+    TimeController.prototype.constructor = TimeController;
 	
-	return TimeView;
+	return TimeController;
 });

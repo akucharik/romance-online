@@ -4,9 +4,11 @@
 
 define([
 	'backbone'
-], function(
+], function (
     Backbone
 ) {
+    
+    'use strict';
 
 	var GameTimeView = Backbone.View.extend({
         

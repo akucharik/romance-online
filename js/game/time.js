@@ -1,16 +1,20 @@
+// @author      Adam Kucharik <akucharik@gmail.com>
+// @copyright   2015 Adam Kucharik
+// @license     
+
 define([
     'models/time',
-    'views/time'
-], function(
+    'controllers/time'
+], function (
     TimeModel,
-    TimeView
+    TimeController
 ) {
     
-    //'use strict';
+    'use strict';
     
     var time = new TimeModel();
     
-    var timeView = new TimeView({ 
+    var timeController = new TimeController({ 
         model: time
     });
     

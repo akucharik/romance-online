@@ -1,30 +1,36 @@
+// @author      Adam Kucharik <akucharik@gmail.com>
+// @copyright   2015 Adam Kucharik
+// @license     
+
 define([
 	'backbone',
     'jquery',
     'time'
-], function(
+], function (
     Backbone,
     $,
     time
 ) {
+    
+    'use strict';
 
 	var InGameMenuView = Backbone.View.extend({
 		
 		initialize: function () {
-            this.$pause = this.$el.find('#pause');
-            this.$resume = this.$el.find('#resume');
+            this.$elPause = this.$el.find('#pause');
+            this.$elResume = this.$el.find('#resume');
             this.listenTo(time, 'change:isPaused', this.render);
             this.render();
 		},
         
         render: function () {
             if (time.get('isPaused')) {
-                this.$pause.hide();
-                this.$resume.show();
+                this.$elPause.hide();
+                this.$elResume.show();
             }
             else {
-                this.$pause.show();
-                this.$resume.hide();
+                this.$elPause.show();
+                this.$elResume.hide();
             }
 
             return this;

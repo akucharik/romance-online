@@ -6,20 +6,22 @@ define([
 	'backbone',
     'utilities',
     'time'
-], function(
+], function (
     Backbone,
     Utilities,
     time
 ) {
+    
+    'use strict';
 
 	var FrameRateView = Backbone.View.extend({
         
-		initialize: function() {
+		initialize: function () {
             this.listenTo(time, 'change:frameTime', this.averageFrameRate);
             this.listenTo(this.model, 'change:averageFrameRate', this.render);
 		},
 		
-		render: function() {
+		render: function () {
 			this.el.innerHTML = this.model.get('averageFrameRate');
 		},
 
