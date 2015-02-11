@@ -78,6 +78,10 @@ button {
     display: inline;
 }
 
+.menu > li > button {
+    text-align: center;
+}
+
 /* Character actions */
 .character-actions-menu {
     left: 1.0em;
@@ -86,7 +90,17 @@ button {
 }
 
 .character-actions-menu > li > button {
-    text-align: center;
+    width: 7.0em
+}
+
+/* Game menu */
+.in-game-menu {
+    position: absolute;
+    right: 0.5em;
+    top: 8.0em;
+}
+
+.in-game-menu > li > button {
     width: 7.0em
 }
 

@@ -1,3 +1,7 @@
+// @author      Adam Kucharik <akucharik@gmail.com>
+// @copyright   2015 Adam Kucharik
+// @license     
+
 define([
 	'backbone'
 ], function(
@@ -8,28 +12,29 @@ define([
         
 		initialize: function() {
             this.listenTo(this.model, 'change:frameTime', this.update);
+            this.listenTo(this.model, 'change:isPaused', this.onIsPausedChange);
 		},
         
-        pause: function () {
-            this.model.set('pauseTime', Date.now());
-            this.stopListening(this.model, 'change:frameTime', this.update);
-            this.model.set('paused', true);
-            
-            return this.model.get('elapsedGameTime');
+        onIsPausedChange: function () {
+            if (this.model.get('isPaused')) {
+                this.stopListening(this.model, 'change:frameTime', this.update);
+                this.model.set('pauseTime', Date.now());
+                
+                return this.model.get('elapsedGameTime');
+            }
+            else {
+                this.model.set('frameTime', Date.now() / 1000);
+                this.listenTo(this.model, 'change:frameTime', this.update);
+                this.model.set('pauseDuration', (Date.now() - this.model.get('pauseTime')) / 1000);
+                
+                return this.model.get('pauseDuration');
+            }  
         },
         
         reset: function () {
             this.model.set('elapsedGameTime', 0);
             
             return this;
-        },
-        
-        resume: function () {
-            this.model.set('pauseDuration', (Date.now() - this.model.get('pauseTime')) / 1000);
-            this.listenTo(this.model, 'change:frameTime', this.update);
-            this.model.set('paused', false);
-            
-            return this.model.get('pauseDuration');
         },
         
         update: function() {

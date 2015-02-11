@@ -1,3 +1,7 @@
+// @author      Adam Kucharik <akucharik@gmail.com>
+// @copyright   2015 Adam Kucharik
+// @license     
+
 define([
 	'backbone'
 ], function(
@@ -18,8 +22,8 @@ define([
             pauseTime: 0,
             pauseDuration: 0,
             
-            // States
-            paused: false
+            // Bools
+            isPaused: false
         }
         
     });

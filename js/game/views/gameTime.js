@@ -1,3 +1,7 @@
+// @author      Adam Kucharik <akucharik@gmail.com>
+// @copyright   2015 Adam Kucharik
+// @license     
+
 define([
 	'backbone'
 ], function(

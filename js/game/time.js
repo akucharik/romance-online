@@ -14,5 +14,5 @@ define([
         model: time
     });
     
-    return timeView;
+    return time;
 });

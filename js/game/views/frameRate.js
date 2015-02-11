@@ -1,3 +1,7 @@
+// @author      Adam Kucharik <akucharik@gmail.com>
+// @copyright   2015 Adam Kucharik
+// @license     
+
 define([
 	'backbone',
     'utilities',
@@ -11,7 +15,7 @@ define([
 	var FrameRateView = Backbone.View.extend({
         
 		initialize: function() {
-            this.listenTo(time.model, 'change:frameTime', this.averageFrameRate);
+            this.listenTo(time, 'change:frameTime', this.averageFrameRate);
             this.listenTo(this.model, 'change:averageFrameRate', this.render);
 		},
 		
@@ -20,7 +24,7 @@ define([
 		},
 
         calculateCurrentFrameRate: function () {
-            return Math.round(1 / time.model.get('elapsedFrameTime'));
+            return Math.round(1 / time.get('elapsedFrameTime'));
         },
         
         averageFrameRate: function () {

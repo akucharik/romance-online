@@ -15,6 +15,7 @@ define([
     'views/frameRate',
     'views/gameTime',
     'views/grid',
+    'views/inGameMenu',
     'views/tile',
     'views/focusedTile',
     'views/selectedTile',
@@ -25,18 +26,19 @@ define([
     CharacterCollection,
     constants,
     eventLog,
-    timeView,
+    time,
     CharacterModel,
     FrameRateModel,
     GridModel,
     Pathfinder,
     StateManagerModel,
-    TimeModel,
+    TileModel,
     CharacterView,
     CharacterTurnView,
     FrameRateView,
     GameTimeView,
     GridView,
+    InGameMenuView,
     TileView,
     FocusedTileView,
     SelectedTileView,
@@ -53,11 +55,11 @@ define([
             this.buildFrame = this.buildFrame.bind(this);
             
             // set time
-            this.timeView = timeView;
+            this.time = time;
             
             // set up game time
             this.gameTime = new GameTimeView({
-                model: this.timeView.model,
+                model: this.time,
                 el: '#gameTime'
             });
             
@@ -66,6 +68,11 @@ define([
             this.frameRateView = new FrameRateView({
                 model: this.frameRate,
                 el: '#frameRate'
+            });
+            
+            // set up in game menu
+            this.inGameMenuView = new InGameMenuView({
+                el: '#inGameMenu'
             });
             
             // set up grid
@@ -365,7 +372,7 @@ define([
             }
         },
 
-        update: function (deltaFrameTime) {
+        update: function () {
             
         },
 
@@ -399,9 +406,9 @@ define([
         },
 
         buildFrame: function () {
-            if (this.timeView.model.get('paused') !== true) {
-                this.timeView.model.set('frameTime', Date.now() / 1000);
-                this.update(this.timeView.model.get('frameTimeDelta'));
+            if (!this.time.get('isPaused')) {
+                this.time.set('frameTime', Date.now() / 1000);
+                this.update();
                 this.renderForeground(this.foregroundCtx);
             }
             window.requestAnimationFrame(this.buildFrame);
