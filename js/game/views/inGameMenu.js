@@ -17,8 +17,8 @@ define([
 	var InGameMenuView = Backbone.View.extend({
 		
 		initialize: function () {
-            this.$elPause = this.$el.find('#pause');
-            this.$elResume = this.$el.find('#resume');
+            this.$elPause = $('#pause');
+            this.$elResume = $('#resume');
             this.listenTo(time, 'change:isPaused', this.render);
             this.render();
 		},
