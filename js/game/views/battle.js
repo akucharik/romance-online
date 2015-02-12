@@ -11,7 +11,7 @@ define([
     'models/stateManager',
     'models/tile',
     'views/character',
-    'views/characterTurn',
+    'views/characterActionsMenu',
     'views/frameRate',
     'views/gameTime',
     'views/grid',
@@ -34,7 +34,7 @@ define([
     StateManagerModel,
     TileModel,
     CharacterView,
-    CharacterTurnView,
+    CharacterActionsMenuView,
     FrameRateView,
     GameTimeView,
     GridView,
@@ -107,6 +107,13 @@ define([
                 tagName: 'canvas'
             });
             
+            // set up character action menu
+            this.characterActionsMenuView = new CharacterActionsMenuView({
+                model: this.model,
+                el: '#characterActionsMenu'
+            });
+            
+            // set initial state
             // set up characters
             this.character1 = new CharacterModel({
                 spriteX: 205,
@@ -140,13 +147,6 @@ define([
             // set up additional models
             this.pathfinder = new Pathfinder(this.grid);
             this.stateManager = new StateManagerModel();
-            
-            // set up additional views
-            // TODO: consider renaming to have "Menu" in the name
-            this.characterTurnView = new CharacterTurnView({
-                model: this.model,
-                el: '#characterActionsMenu'
-            });
             
             // set up background
             this.background = document.querySelector('#background');
