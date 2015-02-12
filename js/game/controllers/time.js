@@ -10,15 +10,7 @@ define([
     
     'use strict';
 
-	var TimeController = function (options) {
-        
-        _.extend(this, Backbone.Events);
-        var options = options || {};
-        this.model = options.model;
-        this.initialize();
-    };
-    
-    TimeController.prototype = {
+	var TimeController = Backbone.View.extend({
         
         initialize: function () {
             this.listenTo(this.model, 'change:frameTime', this.update);
@@ -53,9 +45,7 @@ define([
             
             return this;
         }
-    };
-    
-    TimeController.prototype.constructor = TimeController;
+    });
 	
 	return TimeController;
 });
